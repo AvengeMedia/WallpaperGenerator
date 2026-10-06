@@ -199,7 +199,7 @@
   font-family: "Material Symbols Rounded";
   font-weight: normal;
   font-style: normal;
-  font-size: 1.75em; /* Preferred icon size */
+  font-size: 1.75em;
   display: inline-block;
   line-height: 1;
   text-transform: none;
@@ -207,4 +207,12 @@
   word-wrap: normal;
   white-space: nowrap;
   direction: ltr;
+  font-variation-settings: "FILL" 0;
+  transition: font-variation-settings 100ms var(--ease-effect);
+}
+
+[aria-selected="true"] .material-symbols-rounded,
+[aria-checked="true"] .material-symbols-rounded,
+[data-checked] .material-symbols-rounded {
+  font-variation-settings: "FILL" 1;
 }
