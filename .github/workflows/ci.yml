@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE: ghcr.io/avengemedia/wallpaper-generator
+
+jobs:
+  checks:
+    name: Lint, format, typecheck
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build
+
+  build_and_publish:
+    name: Build image
+    needs: checks
+    if: github.event_name == 'push'
+    strategy:
+      matrix:
+        include:
+          - platform: linux/amd64
+            runs-on: ubuntu-24.04
+            arch: amd64
+          - platform: linux/arm64
+            runs-on: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runs-on }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          provenance: false
+          push: true
+          tags: ${{ env.IMAGE }}:${{ github.run_id }}-${{ matrix.arch }}
+
+  create_manifest:
+    name: Multi-arch manifest
+    needs: build_and_publish
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - run: |
+          docker manifest create ${{ env.IMAGE }}:${{ github.run_id }} \
+            --amend ${{ env.IMAGE }}:${{ github.run_id }}-amd64 \
+            --amend ${{ env.IMAGE }}:${{ github.run_id }}-arm64
+          docker manifest annotate --arch amd64 --os linux ${{ env.IMAGE }}:${{ github.run_id }} ${{ env.IMAGE }}:${{ github.run_id }}-amd64
+          docker manifest annotate --arch arm64 --os linux ${{ env.IMAGE }}:${{ github.run_id }} ${{ env.IMAGE }}:${{ github.run_id }}-arm64
+          docker manifest push ${{ env.IMAGE }}:${{ github.run_id }}
+
+  deploy:
+    name: Deploy
+    needs: create_manifest
+    runs-on: ubuntu-24.04
+    environment:
+      name: production
+      url: https://wallpaper.danklinux.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: imranismail/setup-kustomize@v1
+        with:
+          kustomize-version: "3.5.4"
+      - name: Set image
+        working-directory: ./k8s
+        run: |
+          kustomize edit set image replaceme=${{ env.IMAGE }}:${{ github.run_id }}
+          kustomize build . > deployment-k.yaml
+      - name: Deploy to cluster
+        uses: bbedward/kubectl@master
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        with:
+          args: apply -f ./k8s/deployment-k.yaml

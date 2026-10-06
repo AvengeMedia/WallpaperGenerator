@@ -1,0 +1,8 @@
+node_modules
+dist
+.git
+.github
+.tanstack
+k8s
+*.md
+wallpaper-kubeconfig.yaml

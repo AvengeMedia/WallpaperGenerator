@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wallpaper Generator | Dank Linux</title>
+    <meta
+      name="description"
+      content="Material 3 wallpaper generator. Shapes, patterns, and palettes you can export as PNG or as a DankMaterialShell layout."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Wallpaper Generator | Dank Linux" />
+    <meta
+      property="og:description"
+      content="Material 3 wallpaper generator for DankMaterialShell."
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link
+      rel="preload"
+      href="/fonts/GoogleSansFlex.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <script>
+      try {
+        var saved = JSON.parse(localStorage.getItem("wallpaper-layout-v1"));
+        if (saved && saved.dark === false) document.documentElement.className = "light";
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

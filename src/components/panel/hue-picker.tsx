@@ -1,0 +1,79 @@
+import { useState } from "react";
+import { FieldLabel } from "@/components/ui/field-label";
+import { Slider } from "@/components/ui/slider";
+import { hexToRgb, toOklch } from "@/lib/color";
+import { BASE_HUE } from "@/lib/theme";
+import { normDeg } from "@/lib/utils";
+import { useWallpaper, wallpaper } from "@/store/wallpaper";
+import { ui } from "@/store/ui";
+
+interface HuePickerProps {
+  track: string;
+  placeholder: string;
+}
+
+export function HuePicker({ track, placeholder }: HuePickerProps) {
+  const hue = useWallpaper((s) => s.prefs.hue);
+  const [hex, setHex] = useState("");
+
+  const applyHex = (text: string) => {
+    const rgb = hexToRgb(text);
+    if (!rgb) {
+      if (text.trim()) ui.showToast("Use a hex like #4c662b", 2000);
+      return;
+    }
+    const [, chroma, h] = toOklch(rgb);
+    if (chroma < 0.01) {
+      ui.showToast("That color is gray, so it has no hue.", 2000);
+      return;
+    }
+    wallpaper.setHue(h - BASE_HUE);
+  };
+
+  const onSliderDragStart = () => document.documentElement.classList.add("no-transitions");
+  const onSliderDragEnd = () => document.documentElement.classList.remove("no-transitions");
+  const onHueChange = (v: number) => {
+    setHex("");
+    wallpaper.setHue(v - BASE_HUE);
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      <FieldLabel icon={<span className="material-symbols-rounded">palette</span>} htmlFor="hue">
+        Hue
+      </FieldLabel>
+      <Slider
+        id="hue"
+        min={0}
+        max={359.5}
+        step={0.5}
+        value={+normDeg(BASE_HUE + hue).toFixed(1)}
+        track={track}
+        onChange={onHueChange}
+        onReset={() => {
+          setHex("");
+          wallpaper.setHue(0);
+        }}
+        onPointerDown={onSliderDragStart}
+        onPointerUp={onSliderDragEnd}
+        onPointerCancel={onSliderDragEnd}
+      />
+      <input
+        type="text"
+        maxLength={7}
+        placeholder={placeholder}
+        spellCheck={false}
+        autoComplete="off"
+        title="Type a hex color to use its hue"
+        value={hex}
+        onChange={(e) => {
+          setHex(e.target.value);
+          if (/^#?[0-9a-f]{6}$/i.test(e.target.value.trim())) applyHex(e.target.value);
+        }}
+        onBlur={(e) => applyHex(e.target.value)}
+        onKeyDown={(e) => (e.key === "Enter" || e.key === "Escape") && e.currentTarget.blur()}
+        className="w-full rounded-2xl border border-on-surface/38 bg-transparent px-4 py-2.5 font-[inherit] text-on-surface transition-[border-color,box-shadow] duration-200 placeholder:text-on-surface/60 hover:border-on-surface focus:border-primary focus:shadow-[0_0_0_1px_var(--color-primary)] focus:outline-none"
+      />
+    </div>
+  );
+}

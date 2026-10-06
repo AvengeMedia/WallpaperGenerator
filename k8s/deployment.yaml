@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wallpaper-generator
+  namespace: wallpaper
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wallpaper-generator
+  template:
+    metadata:
+      labels:
+        app: wallpaper-generator
+    spec:
+      containers:
+        - name: wallpaper-generator
+          image: replaceme
+          ports:
+            - containerPort: 8080
+              name: http
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
