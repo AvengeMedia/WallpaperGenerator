@@ -82,7 +82,7 @@ function SurpriseButton() {
     <Button
       variant="tonal"
       className="h-12 w-12 shrink-0 rounded-3xl px-0 py-0 [&_svg]:size-6"
-      title="Clears everything and adds random shapes (U)"
+      title="Clears everything and randomizes shapes and pattern (U)"
       aria-label="Surprise me"
       onClick={wallpaper.surprise}
     >

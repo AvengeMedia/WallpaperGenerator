@@ -41,10 +41,7 @@ export function Stage({ scale }: StageProps) {
     const svg = svgRef.current;
     if (!svg) return;
     const onWheel = (e: WheelEvent) => {
-      const id = layerIdOf(e.target) ?? wallpaperStore.state.activeId;
-      if (!id) return;
       e.preventDefault();
-      wallpaper.select(id);
       const l = selectActive(wallpaperStore.state);
       if (!l) return;
       const delta = e.deltaY || e.deltaX;
@@ -53,7 +50,14 @@ export function Stage({ scale }: StageProps) {
         wallpaper.patchActive({ rot: normDeg(l.rot + delta * step) });
         return;
       }
-      wallpaper.resizeActive(l.size * Math.exp(-delta * 0.001));
+      const { canvas } = wallpaperStore.state;
+      const stepPx = Math.min(canvas.w, canvas.h) / 100;
+
+      wallpaper.resizeActive(
+        e.ctrlKey || e.metaKey
+          ? l.size + Math.sign(-delta) * stepPx
+          : l.size * Math.exp(-delta * 0.001),
+      );
     };
     svg.addEventListener("wheel", onWheel, { passive: false });
     return () => svg.removeEventListener("wheel", onWheel);
