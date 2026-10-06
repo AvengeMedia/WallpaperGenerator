@@ -52,6 +52,7 @@ export function ExportMenu() {
     <div ref={wrap} className="relative">
       <IconButton
         ref={trigger}
+        variant="text"
         label="Export"
         aria-haspopup="menu"
         aria-expanded={open}

@@ -1,32 +1,35 @@
 import type { ComponentProps } from "react";
+import { useRipple } from "@/hooks/ui/use-ripple";
 import { cn } from "@/lib/utils";
 
-type Variant = "filled" | "tonal" | "secondary" | "danger";
+export type ButtonVariant = "filled" | "tonal" | "text" | "danger";
 
 interface ButtonProps extends ComponentProps<"button"> {
-  variant?: Variant;
+  variant?: ButtonVariant;
 }
 
-const variants: Record<Variant, string> = {
+export const buttonVariants: Record<ButtonVariant, string> = {
   filled: "bg-primary text-on-primary hover:state-layer-8 active:state-layer-12",
-  tonal: "bg-primary-container text-on-primary-container hover:state-layer-8 active:state-layer-12",
-  secondary:
+  tonal:
     "bg-secondary-container text-on-secondary-container hover:state-layer-8 active:state-layer-12",
+  text: "bg-transparent text-on-surface hover:state-layer-8 active:state-layer-12",
   danger:
     "bg-[color-mix(in_srgb,var(--color-error)_22%,var(--color-surface-container))] text-[color-mix(in_srgb,var(--color-error)_55%,var(--color-on-surface))] hover:state-layer-8 active:state-layer-12",
 };
 
-export function Button({ variant = "secondary", className, onClick, ...rest }: ButtonProps) {
+export function Button({ variant = "tonal", className, onClick, ref, ...rest }: ButtonProps) {
+  const ripple = useRipple({ ref });
   return (
     <button
       type="button"
+      ref={ripple}
       onClick={(e) => {
         e.currentTarget.blur();
         onClick?.(e);
       }}
       className={cn(
         "inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-[20px] border-0 px-2.5 py-3 text-[13px] leading-none font-medium focus-ring morph active:rounded-xl [&_svg]:size-5 [&_svg]:shrink-0",
-        variants[variant],
+        buttonVariants[variant],
         className,
       )}
       {...rest}

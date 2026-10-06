@@ -15,6 +15,7 @@ export function Toolbar() {
     <div className="flex items-center gap-1 px-2 pb-2 group-data-[panel=mini]/panel:flex-col group-data-[panel=mini]/panel:gap-2 group-data-[panel=mini]/panel:px-0 group-data-[panel=mini]/panel:pb-0 max-md:group-data-[panel=mini]/panel:flex-row max-md:group-data-[panel=mini]/panel:justify-center">
       <IconButton
         label={mini ? "Expand panel (S)" : "Minimize panel (S)"}
+        variant="text"
         aria-expanded={!mini}
         onClick={ui.toggleMini}
       >
@@ -24,23 +25,28 @@ export function Toolbar() {
           <span className="material-symbols-rounded">menu_open</span>
         )}
       </IconButton>
-      <IconButton label="Keyboard shortcuts (?)" onClick={() => ui.setShortcutsOpen(true)}>
+      <IconButton
+        label="Keyboard shortcuts (?)"
+        variant="text"
+        onClick={() => ui.setShortcutsOpen(true)}
+      >
         <span className="material-symbols-rounded">keyboard_alt</span>
       </IconButton>
       <span className="flex-1 group-data-[panel=mini]/panel:hidden" />
       <div className="contents group-data-[panel=mini]/panel:hidden">
         <IconButton
           label="Import a layout from JSON (or drop the file onto the page)"
+          variant="text"
           onClick={() => fileInput.current?.click()}
         >
           <span className="material-symbols-rounded">upload</span>
         </IconButton>
         <ExportMenu />
       </div>
-      <IconButton label="Undo (Z)" disabled={!canUndo} onClick={wallpaper.undo}>
+      <IconButton label="Undo (Z)" variant="text" disabled={!canUndo} onClick={wallpaper.undo}>
         <span className="material-symbols-rounded">undo</span>
       </IconButton>
-      <IconButton label="Redo (Y)" disabled={!canRedo} onClick={wallpaper.redo}>
+      <IconButton label="Redo (Y)" variant="text" disabled={!canRedo} onClick={wallpaper.redo}>
         <span className="material-symbols-rounded">redo</span>
       </IconButton>
       <input

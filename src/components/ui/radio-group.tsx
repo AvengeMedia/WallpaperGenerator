@@ -5,6 +5,7 @@ import {
   type HTMLAttributes,
   type KeyboardEvent,
 } from "react";
+import { useRipple } from "@/hooks/ui/use-ripple";
 import { cn } from "@/lib/utils";
 
 interface RadioContextValue<T extends string = string> {
@@ -66,12 +67,14 @@ interface RadioItemProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export function RadioItem({ value, className, onClick, ...rest }: RadioItemProps) {
+  const ripple = useRipple();
   const ctx = useContext(RadioContext);
   if (!ctx) throw new Error("RadioItem must be inside RadioGroup");
   const checked = ctx.value === value;
   return (
     <button
       type="button"
+      ref={ripple}
       role="radio"
       aria-checked={checked}
       tabIndex={checked ? 0 : -1}

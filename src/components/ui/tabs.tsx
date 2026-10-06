@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useRipple } from "@/hooks/ui/use-ripple";
 import { cn } from "@/lib/utils";
 
 interface TabDef<T extends string> {
@@ -19,6 +20,7 @@ const INDICATOR_WIDTH = 32;
 export function Tabs<T extends string>({ tabs, value, onChange, label }: TabsProps<T>) {
   const list = useRef<HTMLDivElement>(null);
   const [left, setLeft] = useState(0);
+  const ripple = useRipple();
 
   useLayoutEffect(() => {
     const el = list.current;
@@ -66,6 +68,7 @@ export function Tabs<T extends string>({ tabs, value, onChange, label }: TabsPro
             aria-selected={selected}
             aria-controls={`panel-${t.id}`}
             tabIndex={selected ? 0 : -1}
+            ref={ripple}
             onClick={() => onChange(t.id)}
             onKeyDown={(e) => onKeyDown(e, i)}
             className={cn(

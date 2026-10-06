@@ -65,21 +65,22 @@ export function ShapeTab() {
       </div>
 
       <div className="flex items-center gap-2">
-        <button
-          type="button"
+        <Button
+          variant="tonal"
           title="Change shape"
           onClick={() => openShapes("replace")}
-          className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-[18px] border-0 bg-secondary-container py-0 pr-1.5 pl-3 text-[15px] font-semibold text-on-secondary-container focus-ring morph hover:state-layer-8 active:rounded-[10px] active:state-layer-12 [&>svg]:size-5"
+          className="inline-flex h-9 gap-1.5 rounded-[18px] px-3 py-0 text-[15px] font-semibold active:rounded-[10px] [&>svg]:size-5"
         >
           <span className="material-symbols-rounded">shapes</span>
           {layerName(active)}
           <span className="material-symbols-rounded">chevron_right</span>
-        </button>
+        </Button>
         <IconButton
-          size="sm"
+          variant="tonal"
+          size="md"
           label={`${isBlob ? "Reshape blob" : "Random shape"} (M)`}
           onClick={wallpaper.shuffleActive}
-          className="ml-auto rounded-[18px] bg-secondary-container text-on-secondary-container hover:bg-secondary-container hover:text-on-secondary-container hover:state-layer-8 active:rounded-[10px]"
+          className="ml-auto rounded-[18px] active:rounded-[10px]"
         >
           <span className="material-symbols-rounded">shuffle</span>
         </IconButton>
