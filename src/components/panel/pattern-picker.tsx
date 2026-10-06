@@ -68,12 +68,12 @@ export function PatternPicker() {
       <div className="flex flex-col gap-2">
         <FieldLabel
           icon={<span className="material-symbols-rounded">open_in_full</span>}
-          htmlFor="pscale"
+          htmlFor="pattern-scale"
         >
           Pattern size
         </FieldLabel>
         <Slider
-          id="pscale"
+          id="pattern-scale"
           min={PATTERN_SCALE.min}
           max={PATTERN_SCALE.max}
           step={0.1}
@@ -85,12 +85,12 @@ export function PatternPicker() {
       <div className="flex flex-col gap-2">
         <FieldLabel
           icon={<span className="material-symbols-rounded">contrast</span>}
-          htmlFor="popacity"
+          htmlFor="pattern-opacity"
         >
           Pattern strength
         </FieldLabel>
         <Slider
-          id="popacity"
+          id="pattern-opacity"
           min={PATTERN_OPACITY.min * 100}
           max={PATTERN_OPACITY.max * 100}
           step={1}

@@ -43,8 +43,8 @@ export function Panel({ hueTrack, primaryHex }: PanelProps) {
           <div
             inert={picking}
             className={cn(
-              "absolute inset-0 flex flex-col transition-[transform,visibility] duration-450 ease-emphasized",
-              picking && "invisible -translate-x-[18%] duration-300 ease-emphasized-accelerate",
+              "absolute inset-0 flex flex-col transition-[translate,scale,opacity] duration-450 ease-emphasized",
+              picking && "-translate-x-[18%] scale-90 opacity-0",
               mini && "hidden",
             )}
           >

@@ -19,7 +19,7 @@ export const isShapeIndex = (v: unknown): v is number =>
   Number.isInteger(v) && (v as number) >= 0 && (v as number) < SHAPES.length;
 
 export const prettyName = (name: string) =>
-  name.replace(/([a-z])([A-Z0-9])/g, "$1 $2").replace(/(.+) (\d+)(.+)/g, "$2-$3 $1");
+  name.replace(/([a-z])([A-Z0-9])/g, "$1 $2").replace(/(.+) (\d+)(.+)/, "$2-$3 $1");
 
 export const randomShapeIndex = (avoid?: number) => {
   if (SHAPES.length < 2) return 0;

@@ -27,7 +27,7 @@ export function ShapePicker() {
       aria-label="Shape picker"
       inert={!open}
       data-open={open}
-      className="absolute inset-0 flex flex-col bg-surface-container transition-[transform,visibility] group-data-[panel=mini]/panel:hidden data-[open=false]:invisible data-[open=false]:translate-x-full data-[open=false]:duration-300 data-[open=false]:ease-emphasized-accelerate data-[open=true]:duration-450 data-[open=true]:ease-emphasized"
+      className="absolute inset-0 flex flex-col bg-surface-container transition-[translate,opacity] duration-450 ease-emphasized group-data-[panel=mini]/panel:hidden data-[open=false]:translate-x-full"
     >
       <div className="flex items-center gap-2 border-b border-outline-variant px-1 pb-2">
         <IconButton ref={back} label="Back (Esc)" onClick={ui.closePicker}>
@@ -37,13 +37,11 @@ export function ShapePicker() {
           {replacing ? "Change shape" : "Add shape"}
         </span>
       </div>
-      {open && (
-        <ShapeGrid
-          className="min-h-0 flex-1 grid-cols-4 px-1 pt-3 pb-1"
-          currentShape={replacing ? active?.shape : undefined}
-          onPick={(spec) => pickShape(mode, spec)}
-        />
-      )}
+      <ShapeGrid
+        className="min-h-0 flex-1 grid-cols-4 px-1 pt-3 pb-1"
+        currentShape={replacing ? active?.shape : undefined}
+        onPick={(spec) => pickShape(mode!, spec)}
+      />
     </section>
   );
 }
