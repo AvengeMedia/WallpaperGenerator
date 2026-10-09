@@ -49,7 +49,11 @@ src/
 
 ## JSON layout
 
-The export matches the DMS wallpaper format. Positions are centre fractions of the canvas, size is a fraction of the shorter side, rotation is in degrees.
+The export matches the DMS wallpaper format. Positions are centre fractions of the canvas, size is a fraction of the shorter side, rotation is in degrees. `overlap` and `opacity` (0.05 to 1) are optional. An optional top-level `name` becomes the profile name in DMS.
+
+Blobs carry `path` (the rendered outline, M/L/C/Z in a unit square) plus `points` and `smoothness`, which the generator uses to re-edit the blob. DMS renders `path` and rebuilds it from `points` when it is missing.
+
+`dms://wallpaper/install/<base64url of the JSON>` installs a layout into a running DMS; "Install in DMS" in the export menu opens that link.
 
 ```json
 {
@@ -62,6 +66,23 @@ The export matches the DMS wallpaper format. Positions are centre fractions of t
       "rotation": 0,
       "fill": "tertiaryContainer",
       "overlap": "primaryContainer"
+    },
+    {
+      "shape": "blob",
+      "x": 0.7,
+      "y": 0.6,
+      "size": 0.4,
+      "rotation": 0,
+      "fill": "secondary",
+      "opacity": 0.8,
+      "path": "M0.9 0.5C0.9 0.75 0.75 0.95 0.5 0.95C0.25 0.95 0.08 0.75 0.08 0.5C0.08 0.25 0.25 0.1 0.5 0.1C0.75 0.1 0.9 0.25 0.9 0.5Z",
+      "points": [
+        { "x": 0.9, "y": 0.5 },
+        { "x": 0.5, "y": 0.95 },
+        { "x": 0.08, "y": 0.5 },
+        { "x": 0.5, "y": 0.1 }
+      ],
+      "smoothness": 2
     }
   ],
   "pattern": "topography",

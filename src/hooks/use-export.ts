@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { canvasToBlob, renderToCanvas } from "@/lib/png";
-import { downloadBlob, serializeLayout } from "@/lib/layout-file";
+import { downloadBlob, installLink, serializeLayout } from "@/lib/layout-file";
 import { shiftedTokens } from "@/lib/theme";
 import { wallpaperStore } from "@/store/wallpaper";
 import { ui } from "@/store/ui";
@@ -46,5 +46,11 @@ export const useExport = () => {
     downloadBlob(new Blob([text], { type: "application/json" }), "wallpaper.json");
   }, []);
 
-  return { exportPng, exportJson };
+  const installInDms = useCallback(() => {
+    const { layers, canvas, prefs } = wallpaperStore.state;
+    const text = serializeLayout(layers, canvas, prefs.pattern, prefs.opacity);
+    window.location.assign(installLink(text));
+  }, []);
+
+  return { exportPng, exportJson, installInDms };
 };

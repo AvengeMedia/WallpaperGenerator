@@ -2,7 +2,15 @@ import type { Size } from "./formats";
 import { newLayerId, sanitizeLayer, type Layer } from "./layer";
 import { isPaletteColor, OVERLAP_OPTIONS, PALETTE, type OverlapColor } from "./palette";
 import { isPatternId, type PatternId } from "./patterns";
-import { isBlob, SHAPES } from "./shapes";
+import {
+  BLOB_MAX_EDGES,
+  BLOB_MIN_EDGES,
+  createBlobPath,
+  isBlob,
+  SHAPES,
+  SMOOTHNESS,
+  type SmoothnessIndex,
+} from "./shapes";
 import { camel, lowerFirst, normDeg, round } from "./utils";
 import { clampOpacity } from "./prefs";
 
@@ -25,6 +33,8 @@ export const serializeLayout = (
     if (isBlob(l)) {
       o.shape = "blob";
       o.path = l.d;
+      o.points = l.points.map((p) => ({ x: round(p.x, 4), y: round(p.y, 4) }));
+      o.smoothness = l.smoothness;
     } else {
       o.shape = lowerFirst(SHAPES[l.shape ?? 0].name);
     }
@@ -43,6 +53,23 @@ export const serializeLayout = (
 };
 
 export type ParseResult = { ok: true; layout: LayoutFile } | { ok: false; error: string };
+
+const isSmoothness = (v: unknown): v is SmoothnessIndex =>
+  Number.isInteger(v) && (v as number) >= 0 && (v as number) < SMOOTHNESS.length;
+
+const isPoints = (v: unknown): v is { x: number; y: number }[] =>
+  Array.isArray(v) &&
+  v.length >= BLOB_MIN_EDGES &&
+  v.length <= BLOB_MAX_EDGES &&
+  v.every((p) => p && Number.isFinite(p.x) && Number.isFinite(p.y));
+
+const blobFields = (r: Record<string, unknown>) => {
+  const smoothness = isSmoothness(r.smoothness) ? r.smoothness : 0;
+  if (isPoints(r.points)) {
+    return { points: r.points, smoothness, d: createBlobPath(r.points, smoothness) };
+  }
+  return { d: r.path };
+};
 
 export const parseLayout = (text: string, canvas: Size): ParseResult => {
   let data: unknown;
@@ -70,7 +97,7 @@ export const parseLayout = (text: string, canvas: Size): ParseResult => {
       fill: PALETTE.find((c) => camel(c) === r.fill),
       overlap: OVERLAP_OPTIONS.find((c) => camel(c) === r.overlap) ?? ("none" as OverlapColor),
     };
-    if (r.shape === "blob") candidate.d = r.path;
+    if (r.shape === "blob") Object.assign(candidate, blobFields(r));
     else candidate.shape = SHAPES.findIndex((sh) => lowerFirst(sh.name) === r.shape);
     if (r.opacity !== undefined) candidate.opacity = r.opacity;
     if (!isPaletteColor(candidate.fill)) continue;
@@ -85,6 +112,14 @@ export const parseLayout = (text: string, canvas: Size): ParseResult => {
   if (typeof file.strength === "number" && Number.isFinite(file.strength))
     layout.strength = clampOpacity(file.strength);
   return { ok: true, layout };
+};
+
+export const installLink = (text: string) => {
+  const bytes = new TextEncoder().encode(text);
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  const base64 = btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  return `dms://wallpaper/install/${base64}`;
 };
 
 export const downloadBlob = (blob: Blob, filename: string) => {

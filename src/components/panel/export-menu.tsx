@@ -20,7 +20,7 @@ interface ExportMenuProps {
 export function ExportMenu({ trigger = true, align = "end" }: ExportMenuProps) {
   const open = useUi((s) => s.exportMenuOpen);
   const canvas = useWallpaper((s) => s.canvas);
-  const { exportPng, exportJson } = useExport();
+  const { exportPng, exportJson, installInDms } = useExport();
   const wrap = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
   const menu = useRef<HTMLDivElement>(null);
@@ -167,6 +167,12 @@ export function ExportMenu({ trigger = true, align = "end" }: ExportMenuProps) {
               "JSON layout",
               "Import as a wallpaper in DankMaterialShell",
               exportJson,
+            )}
+            {item(
+              <span className="material-symbols-rounded">wallpaper</span>,
+              "Install in DMS",
+              "Opens DankMaterialShell on this machine",
+              installInDms,
             )}
           </div>,
           document.body,
