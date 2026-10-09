@@ -56,12 +56,12 @@ export function ShapeGrid({ currentShape, onPick, className }: ShapeGridProps) {
       )}
     >
       <ShapeCard
-        d={blob}
+        d={blob.d}
         name="Random blob"
         tabIndex={active === 0 ? 0 : -1}
         onFocus={() => setActive(0)}
         onPick={(shift) => {
-          onPick({ d: blob }, shift);
+          onPick({ type: "blob", ...blob }, shift);
           setBlob(randomBlob());
         }}
       />
@@ -73,7 +73,7 @@ export function ShapeGrid({ currentShape, onPick, className }: ShapeGridProps) {
           current={currentShape === i}
           tabIndex={active === i + 1 ? 0 : -1}
           onFocus={() => setActive(i + 1)}
-          onPick={(shift) => onPick({ shape: i }, shift)}
+          onPick={(shift) => onPick({ type: "shape", shape: i }, shift)}
         />
       ))}
     </div>

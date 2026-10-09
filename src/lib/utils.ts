@@ -5,6 +5,12 @@ export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));
 
 export const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
+export const decimals = (n: number) => {
+  const s = String(n);
+  if (s.includes("e-")) return parseInt(s.split("e-")[1], 10);
+  return s.split(".")[1]?.length ?? 0;
+};
+
 export const normDeg = (d: number) => ((d % 360) + 360) % 360;
 
 export const round = (v: number, digits = 3) => +v.toFixed(digits);

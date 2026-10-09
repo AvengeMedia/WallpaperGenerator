@@ -10,6 +10,15 @@ import { ariaKeyshortcuts } from "@/lib/shortcut-keys";
 import { normDeg } from "@/lib/utils";
 import { selectActive, selectActiveIndex, useWallpaper, wallpaper } from "@/store/wallpaper";
 import { ui } from "@/store/ui";
+import {
+  BLOB_MAX_EDGES,
+  BLOB_MIN_EDGES,
+  createBlob,
+  isBlob,
+  randomBlob,
+  SMOOTHNESS,
+  SmoothnessIndex,
+} from "@/lib/shapes";
 
 export const openShapes = (mode: "add" | "replace") =>
   ui.panelHidden() ? ui.openSheet(mode) : ui.openPicker(mode);
@@ -33,7 +42,7 @@ export function ShapeTab() {
     );
   }
 
-  const isBlob = active.d !== undefined;
+  const activeIsBlob = isBlob(active);
   const opacity = Math.round((active.opacity ?? 1) * 100);
   const rot = Math.round(normDeg(active.rot)) % 360;
   const size = Math.round((active.size / Math.min(canvas.w, canvas.h)) * 100);
@@ -81,7 +90,7 @@ export function ShapeTab() {
         <IconButton
           variant="tonal"
           size="md"
-          label={`${isBlob ? "Reshape blob" : "Random shape"} (M)`}
+          label={`${activeIsBlob ? "Reshape blob" : "Random shape"} (M)`}
           aria-keyshortcuts={ariaKeyshortcuts("M")}
           onClick={wallpaper.shuffleActive}
           className="ml-auto rounded-[18px] active:rounded-[10px]"
@@ -90,6 +99,50 @@ export function ShapeTab() {
         </IconButton>
       </div>
 
+      {activeIsBlob && (
+        <>
+          <div className="flex flex-col gap-2">
+            <FieldLabel
+              icon={<span className="material-symbols-rounded">123</span>}
+              htmlFor="sm-edges"
+              value={active.points.length}
+            >
+              Edges
+            </FieldLabel>
+            <Slider
+              id="sm-edges"
+              min={BLOB_MIN_EDGES}
+              max={BLOB_MAX_EDGES}
+              step={1}
+              ticks
+              value={active.points.length}
+              onChange={(v) => wallpaper.patchActive({ ...createBlob(v, active.smoothness) })}
+              onReset={() => wallpaper.patchActive({ ...randomBlob() })}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <FieldLabel
+              icon={<span className="material-symbols-rounded">line_curve</span>}
+              htmlFor="sm-smoothness"
+              value={active.smoothness}
+            >
+              Smoothness
+            </FieldLabel>
+            <Slider
+              id="sm-smoothness"
+              min={0}
+              max={SMOOTHNESS.length - 1}
+              step={1}
+              ticks
+              value={active.smoothness}
+              onChange={(v) =>
+                wallpaper.patchActive({ ...createBlob(active.points.length, v as SmoothnessIndex) })
+              }
+              onReset={() => wallpaper.patchActive({ ...randomBlob() })}
+            />
+          </div>
+        </>
+      )}
       <div className="flex flex-col gap-2">
         <FieldLabel
           icon={<span className="material-symbols-rounded">format_color_fill</span>}

@@ -1,14 +1,42 @@
 import { isOverlapColor, isPaletteColor, type OverlapColor, type PaletteColor } from "./palette";
-import { isSafeBlobPath, isShapeIndex, prettyName, SHAPES } from "./shapes";
+import {
+  isBlob,
+  isSafeBlobPath,
+  isShapeIndex,
+  prettyName,
+  SHAPES,
+  SmoothnessIndex,
+} from "./shapes";
 import type { Size } from "./formats";
 import { clamp, normDeg } from "./utils";
 
-export type ShapeSpec = { shape: number; d?: undefined } | { d: string; shape?: undefined };
+export type ShapeLayer = {
+  type: "shape";
+  shape: number;
+  d?: undefined;
+  points?: undefined;
+  smoothness?: SmoothnessIndex;
+};
+export type BlobLayer = {
+  type: "blob";
+  d: string;
+  shape?: undefined;
+  points: {
+    x: number;
+    y: number;
+  }[];
+  smoothness: SmoothnessIndex;
+};
 
-export interface Layer {
+export type ShapeSpec = ShapeLayer | BlobLayer;
+
+export type Layer = {
   id: string;
-  shape?: number;
-  d?: string;
+  type: ShapeSpec["type"];
+  shape?: ShapeSpec["shape"];
+  d?: ShapeSpec["d"];
+  points?: ShapeSpec["points"];
+  smoothness?: ShapeSpec["smoothness"];
   size: number;
   x: number;
   y: number;
@@ -16,8 +44,7 @@ export interface Layer {
   fill: PaletteColor;
   overlap: OverlapColor;
   opacity?: number;
-}
-
+};
 export const LAYER_SIZE_PCT = { min: 5, max: 400 } as const;
 
 let nextId = 0;
@@ -25,8 +52,8 @@ export const newLayerId = () => `l${Date.now().toString(36)}${(nextId++).toStrin
 
 export const layerPath = (l: Pick<Layer, "shape" | "d">) => l.d ?? SHAPES[l.shape ?? 0].d;
 
-export const layerName = (l: Pick<Layer, "shape" | "d">) =>
-  l.d !== undefined ? "Blob" : prettyName(SHAPES[l.shape ?? 0].name);
+export const layerName = (l: Pick<Layer, "type" | "shape" | "d">) =>
+  isBlob(l) ? "Blob" : prettyName(SHAPES[l.shape ?? 0].name);
 
 export const layerTransform = (l: Layer) =>
   `translate(${l.x} ${l.y}) scale(${l.size}) rotate(${l.rot} 0.5 0.5)`;
@@ -63,9 +90,8 @@ export const rescaleLayers = (layers: Layer[], from: Size, to: Size): Layer[] =>
 
 export const sanitizeLayer = (raw: unknown, canvas: Size): Layer | null => {
   if (!raw || typeof raw !== "object") return null;
-  const l = raw as Record<string, unknown>;
-  const hasBlob = l.d !== undefined;
-  if (hasBlob ? !isSafeBlobPath(l.d) : !isShapeIndex(l.shape)) return null;
+  const l = raw as ShapeSpec & Record<string, unknown>;
+  if (isBlob(l) ? !isSafeBlobPath(l.d) : !isShapeIndex(l.shape)) return null;
   if (![l.size, l.x, l.y, l.rot].every((v) => Number.isFinite(v))) return null;
   const size = clampLayerSize(l.size as number, canvas);
   if (!isPaletteColor(l.fill)) return null;
@@ -80,7 +106,14 @@ export const sanitizeLayer = (raw: unknown, canvas: Size): Layer | null => {
   const cy = (l.y as number) + (l.size as number) / 2;
   return {
     id: typeof l.id === "string" ? l.id : newLayerId(),
-    ...(hasBlob ? { d: l.d as string } : { shape: l.shape as number }),
+    ...(isBlob(l)
+      ? {
+          type: "blob",
+          d: l.d,
+          points: l.points,
+          smoothness: l.smoothness,
+        }
+      : { type: "shape", shape: l.shape }),
     size,
     x: cx - size / 2,
     y: cy - size / 2,

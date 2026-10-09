@@ -19,7 +19,7 @@ import {
 } from "@/lib/palette";
 import { DEFAULT_PATTERN, PATTERNS, type PatternId } from "@/lib/patterns";
 import { clampOpacity, clampScale, defaultPrefs, type Prefs } from "@/lib/prefs";
-import { randomBlob, randomShapeIndex, shapeIndex, SHAPES } from "@/lib/shapes";
+import { isBlob, randomBlob, randomShapeIndex, shapeIndex, SHAPES } from "@/lib/shapes";
 import { loadSaved, persist } from "@/lib/storage";
 import { normDeg, pickRandom, rnd } from "@/lib/utils";
 
@@ -49,6 +49,7 @@ const BURST_MS = 600;
 const defaultLayers = (): Layer[] => [
   {
     id: newLayerId(),
+    type: "shape",
     shape: shapeIndex("flower", 28),
     size: 560,
     x: -120,
@@ -59,6 +60,7 @@ const defaultLayers = (): Layer[] => [
   },
   {
     id: newLayerId(),
+    type: "shape",
     shape: shapeIndex("circle", 0),
     size: 1100,
     x: 1000,
@@ -69,6 +71,7 @@ const defaultLayers = (): Layer[] => [
   },
   {
     id: newLayerId(),
+    type: "shape",
     shape: shapeIndex("burst", 24),
     size: 620,
     x: 650,
@@ -131,8 +134,8 @@ const surpriseLayers = (canvas: Size): Layer[] => {
     const fill = randomFill();
     const spec: ShapeSpec =
       Math.random() < 0.25
-        ? { d: randomBlob() }
-        : { shape: Math.floor(Math.random() * SHAPES.length) };
+        ? { type: "blob", ...randomBlob() }
+        : { type: "shape", shape: Math.floor(Math.random() * SHAPES.length) };
     return {
       id: newLayerId(),
       ...spec,
@@ -227,8 +230,13 @@ export const wallpaperStore = createStore(initialState(), ({ setState, get }) =>
   const replaceActiveShape = (spec: ShapeSpec) =>
     updateActive((l) => {
       const next: Layer = { ...l, ...spec };
-      if (spec.d !== undefined) delete next.shape;
-      else delete next.d;
+      if (isBlob(spec)) {
+        delete next.shape;
+      } else {
+        delete next.d;
+        delete next.points;
+        delete next.smoothness;
+      }
       return next;
     });
 
@@ -269,7 +277,9 @@ export const wallpaperStore = createStore(initialState(), ({ setState, get }) =>
       const l = active();
       if (!l) return;
       replaceActiveShape(
-        l.d !== undefined ? { d: randomBlob() } : { shape: randomShapeIndex(l.shape) },
+        isBlob(l)
+          ? { type: "blob", ...randomBlob() }
+          : { type: "shape", shape: randomShapeIndex(l.shape) },
       );
     },
 

@@ -2,7 +2,7 @@ import type { Size } from "./formats";
 import { newLayerId, sanitizeLayer, type Layer } from "./layer";
 import { isPaletteColor, OVERLAP_OPTIONS, PALETTE, type OverlapColor } from "./palette";
 import { isPatternId, type PatternId } from "./patterns";
-import { SHAPES } from "./shapes";
+import { isBlob, SHAPES } from "./shapes";
 import { camel, lowerFirst, normDeg, round } from "./utils";
 import { clampOpacity } from "./prefs";
 
@@ -22,7 +22,7 @@ export const serializeLayout = (
   const m = Math.min(canvas.w, canvas.h);
   const rows = layers.map((l, i) => {
     const o: Record<string, unknown> = {};
-    if (l.d !== undefined) {
+    if (isBlob(l)) {
       o.shape = "blob";
       o.path = l.d;
     } else {
