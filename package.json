@@ -11,7 +11,8 @@
     "format": "vp fmt .",
     "format:check": "vp fmt --check .",
     "prepare": "vp config",
-    "check": "vp check"
+    "check": "vp check",
+    "test": "playwright test"
   },
   "dependencies": {
     "@tanstack/react-hotkeys": "^0.13.0",
@@ -23,6 +24,7 @@
     "tailwind-merge": "^3.7.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.1",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^22",
     "@types/react": "^19.3.0",

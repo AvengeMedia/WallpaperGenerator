@@ -14,7 +14,7 @@ export default defineConfig({
     env: {
       builtin: true,
     },
-    ignorePatterns: ["dist", "node_modules"],
+    ignorePatterns: ["dist", "node_modules", "test-results", "playwright-report", "blob-report"],
     rules: {
       "constructor-super": "error",
       "for-direction": "error",
@@ -124,6 +124,13 @@ export default defineConfig({
           "prefer-spread": "error",
         },
       },
+      {
+        files: ["tests/**/*.js"],
+        rules: {
+          "no-empty": "off",
+          "no-undef": "off",
+        },
+      },
     ],
     options: {
       typeAware: true,
@@ -143,7 +150,15 @@ export default defineConfig({
       stylesheet: "./src/globals.css",
       functions: ["clsx", "cn"],
     },
-    ignorePatterns: ["dist", "node_modules", "public", "package-lock.json"],
+    ignorePatterns: [
+      "dist",
+      "node_modules",
+      "public",
+      "package-lock.json",
+      "test-results",
+      "playwright-report",
+      "blob-report",
+    ],
   },
   resolve: { tsconfigPaths: true },
   plugins: lazyPlugins(() => [react(), tailwindcss()]),

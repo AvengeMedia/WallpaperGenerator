@@ -152,3 +152,9 @@ vite.config.ts.timestamp-*
 wallpaper-kubeconfig.yaml
 k8s/wallpaper-kubeconfig.yaml
 k8s/deployment-k.yaml
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
