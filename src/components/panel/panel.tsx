@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
+import { focusCanvas, isFirstFocusable } from "@/components/ui/focus";
+import { ariaKeyshortcuts } from "@/lib/shortcut-keys";
 import { cn } from "@/lib/utils";
 import { wallpaper } from "@/store/wallpaper";
 import { ui, useUi, type Tab } from "@/store/ui";
@@ -27,9 +29,17 @@ export function Panel({ hueTrack, primaryHex }: PanelProps) {
   if (panel === "hidden") return null;
   const mini = panel === "mini";
 
+  const onPanelKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    if (e.key !== "Tab" || !e.shiftKey) return;
+    if (!isFirstFocusable(document.activeElement, e.currentTarget)) return;
+    e.preventDefault();
+    focusCanvas();
+  };
+
   return (
     <aside
       data-panel={panel}
+      onKeyDown={onPanelKeyDown}
       className={cn(
         "group/panel relative flex shrink-0 flex-col overflow-hidden rounded-[28px] bg-surface-container pb-3 text-sm text-on-surface transition-[width,background-color] duration-300 ease-[cubic-bezier(0.2,0,0,1)] max-md:max-h-[48%] max-md:w-auto",
         mini ? "w-[72px] p-2 pb-3" : "w-80 px-2 pt-2",
@@ -82,8 +92,9 @@ function SurpriseButton() {
     <Button
       variant="tonal"
       className="h-12 w-12 shrink-0 rounded-3xl px-0 py-0 [&_svg]:size-6"
-      title="Clears everything and randomizes shapes and pattern (U)"
+      title="Clears everything and randomizes shapes and pattern (I)"
       aria-label="Surprise me"
+      aria-keyshortcuts={ariaKeyshortcuts("I")}
       onClick={wallpaper.surprise}
     >
       <span className="material-symbols-rounded">casino</span>
@@ -98,6 +109,7 @@ function AddShapeButton({ mini }: { mini: boolean }) {
       type="button"
       title="Add a shape (N)"
       aria-label="Add a shape"
+      aria-keyshortcuts={ariaKeyshortcuts("N")}
       onClick={(e) => {
         e.currentTarget.blur();
         if (picking) ui.closePicker();

@@ -1,5 +1,7 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { IconButton } from "@/components/ui/icon-button";
+import { Kbd } from "@/components/ui/kbd";
+import { keyLabel, keyParts } from "@/lib/shortcut-keys";
 import { ui, useUi } from "@/store/ui";
 
 interface Row {
@@ -8,53 +10,98 @@ interface Row {
   keys: string[];
 }
 
-const groups: { title: string; rows: Row[] }[] = [
+interface Labels {
+  move: string;
+  rotate: string;
+}
+
+const groups = ({ move, rotate }: Labels): { title: string; rows: Row[] }[] => [
   {
-    title: "General",
+    title: "Focus & selection",
     rows: [
-      { label: "Show this cheat sheet", keys: ["?"] },
-      { label: "Add a shape (open or close the picker)", keys: ["N"] },
-      { label: "Add a random blob", keys: ["B"] },
-      { label: "Undo", hint: "or Ctrl+Z", keys: ["Z"] },
-      { label: "Redo", hint: "or Ctrl+Y", keys: ["Y"] },
-      { label: "Export PNG 2× / 1×", hint: "Shift+E for 1×", keys: ["E"] },
-      { label: "Surprise me (clear + randomize)", keys: ["U"] },
-      { label: "Minimize or expand the panel", keys: ["S"] },
-      { label: "Hide or show the panel completely", keys: ["Shift", "S"] },
-      { label: "Light / dark theme", keys: ["Enter"] },
-      { label: "Clear everything", keys: ["R"] },
+      { label: "Next / previous shape", hint: "walks the stacking order", keys: ["Tab"] },
+      { label: "Leave the canvas for the sidebar", hint: "keeps the selection", keys: ["Esc"] },
+      { label: "Switch canvas ↔ sidebar", keys: ["F6"] },
+      { label: "Open the shape picker", keys: ["N"] },
+      { label: "Delete the selected shape", hint: "or Backspace", keys: ["Del"] },
+      { label: "Duplicate the selected shape", hint: "16 px down-right", keys: keyParts("Mod+D") },
     ],
   },
   {
     title: "Selected shape",
     rows: [
-      { label: "Previous / next shape", keys: ["[", "]"] },
-      { label: "Deselect", keys: ["Esc"] },
-      { label: "Delete", hint: "or Backspace", keys: ["Del"] },
-      { label: "Reshape blob / random shape", keys: ["M"] },
-      { label: "Next color", keys: ["C"] },
-      { label: "Pick a palette color", keys: ["1", "–", "8"] },
-      { label: "Next overlap color", hint: "Shift+O for previous", keys: ["O"] },
-      { label: "Layer forward / back", hint: "Shift for front / back", keys: ["↑", "↓"] },
-      { label: "Reset rotation", keys: ["0"] },
-      { label: "Resize (on the wallpaper)", keys: ["Scroll"] },
+      { label: "Move", hint: `or ${move}`, keys: ["←", "→", "↑", "↓"] },
+      {
+        label: "Rotate left / right",
+        hint: `or ${rotate}, Shift snaps to 15°`,
+        keys: [",", "."],
+      },
+      { label: "Resize", hint: "Shift for 10 px", keys: ["R", "F"] },
+      { label: "Opacity down / up", hint: "Shift for 10%", keys: ["T", "G"] },
+      { label: "Reshape a blob / random shape", keys: ["M"] },
+      { label: "Resize on the wallpaper", keys: ["Scroll"] },
       { label: "Rotate", hint: "add Ctrl for fine", keys: ["Shift", "Scroll"] },
     ],
   },
   {
-    title: "Background",
+    title: "Color",
     rows: [
-      { label: "Next pattern", hint: "Shift+P for previous", keys: ["P"] },
-      { label: "Pattern strength", keys: ["−", "+"] },
-      { label: "Pattern size", keys: [",", "."] },
+      { label: "Fill color 1–8", keys: ["1", "–", "8"] },
+      { label: "Overlap color 1–8", keys: ["Shift", "1", "–", "8"] },
+      { label: "Overlap: none (top shape's color)", keys: ["Shift", "0"] },
+      { label: "Cycle fill color next / previous", keys: ["C"] },
     ],
   },
   {
-    title: "Controls",
+    title: "Layer order",
+    rows: [
+      { label: "Layer forward / back", keys: ["U", "J"] },
+      {
+        label: "Layer to front / to back",
+        hint: "Shift jumps all the way",
+        keys: ["Shift", "U / J"],
+      },
+    ],
+  },
+  {
+    title: "Background mode",
+    rows: [
+      { label: "Background mode on / off", hint: "shape keys pause while it is on", keys: ["B"] },
+      {
+        label: "Pattern on / off",
+        hint: "works inside and outside the mode",
+        keys: ["Shift", "B"],
+      },
+      { label: "Previous / next pattern", keys: ["↑", "↓"] },
+      { label: "Intensity lighter / stronger", hint: "or ← →", keys: ["T", "G"] },
+      { label: "Pattern size smaller / larger", hint: "Shift for a coarse step", keys: ["R", "F"] },
+      { label: "Leave background mode", hint: "keeps the pattern", keys: ["Esc"] },
+    ],
+  },
+  {
+    title: "Global",
+    rows: [
+      { label: "Undo", hint: `or ${keyLabel("Mod+Y")}`, keys: keyParts("Mod+Z") },
+      { label: "Redo", keys: keyParts("Mod+Shift+Z") },
+      { label: "Export menu", keys: keyParts("Mod+S") },
+      { label: "Cycle the panel", hint: "full → mini → hidden", keys: ["P"] },
+      { label: "Surprise me (clear + randomize)", hint: "press again to confirm", keys: ["I"] },
+      { label: "Clear everything", hint: "press again to confirm", keys: ["X"] },
+      { label: "Show this cheat sheet", hint: "or F1", keys: ["?"] },
+    ],
+  },
+  {
+    title: "Sidebar",
     rows: [
       { label: "Move between controls", keys: ["Tab"] },
+      { label: "Back to the canvas from the first control", keys: ["Shift", "Tab"] },
       { label: "Choose inside a group (colors, patterns, formats…)", keys: ["←", "→"] },
-      { label: "Adjust a slider", hint: "double-click to reset", keys: ["←", "→"] },
+      {
+        label: "Adjust a slider",
+        hint: "Shift for a coarse step, double-click to reset",
+        keys: ["←", "→"],
+      },
+      { label: "Browse the shape grid", keys: ["←", "→", "↑", "↓"] },
     ],
   },
 ];
@@ -62,6 +109,24 @@ const groups: { title: string; rows: Row[] }[] = [
 export function ShortcutsDialog() {
   const open = useUi((s) => s.shortcutsOpen);
   const ref = useRef<HTMLDialogElement>(null);
+  const [labels, setLabels] = useState<Labels>({ move: "W A S D", rotate: "Q E" });
+
+  useEffect(() => {
+    const kb = (
+      navigator as Navigator & {
+        keyboard?: { getLayoutMap?: () => Promise<Map<string, string>> };
+      }
+    ).keyboard;
+    kb?.getLayoutMap?.()
+      .then((map) => {
+        const at = (code: string) => (map.get(code) ?? code.slice(3)).toUpperCase();
+        setLabels({
+          move: `${at("KeyW")} ${at("KeyA")} ${at("KeyS")} ${at("KeyD")}`,
+          rotate: `${at("KeyQ")} ${at("KeyE")}`,
+        });
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const dlg = ref.current;
@@ -82,7 +147,11 @@ export function ShortcutsDialog() {
         <h2 id="shortcuts-title" className="m-0 flex-1 text-[22px] font-semibold">
           Keyboard shortcuts
         </h2>
-        <IconButton label="Close (Esc)" onClick={() => ui.setShortcutsOpen(false)}>
+        <IconButton
+          label="Close (Esc)"
+          aria-keyshortcuts="Escape"
+          onClick={() => ui.setShortcutsOpen(false)}
+        >
           <span className="material-symbols-rounded">close</span>
         </IconButton>
       </div>
@@ -90,7 +159,7 @@ export function ShortcutsDialog() {
         tabIndex={-1}
         className="grid grid-cols-2 gap-x-9 gap-y-6 overflow-y-auto px-6 pt-2 pb-6 max-sm:grid-cols-1"
       >
-        {groups.map((g) => (
+        {groups(labels).map((g) => (
           <section key={g.title}>
             <h3 className="mb-1.5 text-xs font-semibold tracking-[.06em] text-primary uppercase">
               {g.title}
@@ -108,12 +177,7 @@ export function ShortcutsDialog() {
                 </span>
                 <span className="flex shrink-0 gap-1">
                   {r.keys.map((k, j) => (
-                    <kbd
-                      key={j}
-                      className="min-w-[26px] rounded-lg bg-on-surface/12 px-2 py-[3px] text-center font-mono text-xs leading-normal font-medium shadow-[inset_0_-1px_0_color-mix(in_srgb,var(--color-on-surface)_22%,transparent)]"
-                    >
-                      {k}
-                    </kbd>
+                    <Kbd key={j}>{k}</Kbd>
                   ))}
                 </span>
               </div>

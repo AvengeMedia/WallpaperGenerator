@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useFocusReturn } from "@/hooks/ui/use-focus-return";
 import { pickShape } from "@/components/panel/shape-picker";
 import { ShapeGrid } from "@/components/panel/shape-grid";
 import { cn } from "@/lib/utils";
@@ -9,6 +10,7 @@ export function ShapeSheet() {
   const mode = useUi((s) => s.sheet);
   const open = mode !== null;
   const sheet = useRef<HTMLDivElement>(null);
+  useFocusReturn(open);
 
   useEffect(() => {
     if (open) sheet.current?.focus({ preventScroll: true });

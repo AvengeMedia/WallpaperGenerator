@@ -4,15 +4,19 @@ interface ShapeCardProps {
   d: string;
   name: string;
   current?: boolean;
+  tabIndex?: number;
+  onFocus?: () => void;
   onPick: (shiftKey: boolean) => void;
 }
 
-export function ShapeCard({ d, name, current, onPick }: ShapeCardProps) {
+export function ShapeCard({ d, name, current, tabIndex, onFocus, onPick }: ShapeCardProps) {
   return (
     <button
       type="button"
       aria-label={name}
       title={name}
+      tabIndex={tabIndex}
+      onFocus={onFocus}
       onClick={(e) => onPick(e.shiftKey)}
       className={cn(
         "group/card relative flex cursor-pointer items-center justify-center rounded-2xl border-0 bg-transparent px-0 py-2 morph hover:bg-on-surface/8 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:rounded-[10px]",

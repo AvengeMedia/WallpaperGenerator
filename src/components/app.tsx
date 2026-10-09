@@ -2,6 +2,7 @@ import { Preview } from "@/components/canvas/preview";
 import { Panel } from "@/components/panel/panel";
 import { ShapeSheet } from "@/components/shape-sheet";
 import { ShortcutsDialog } from "@/components/shortcuts-dialog";
+import { LiveRegion } from "@/components/ui/live-region";
 import { Toast } from "@/components/ui/toast";
 import { useShortcuts } from "@/hooks/use-shortcuts";
 import { useThemeColors } from "@/hooks/use-theme-colors";
@@ -22,6 +23,7 @@ export function App() {
       <ShapeSheet />
       <ShortcutsDialog />
       <Toast />
+      <LiveRegion />
     </>
   );
 }

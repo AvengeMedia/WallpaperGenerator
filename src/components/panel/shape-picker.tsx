@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
+import { useFocusReturn } from "@/hooks/ui/use-focus-return";
 import { IconButton } from "@/components/ui/icon-button";
 import type { ShapeSpec } from "@/lib/layer";
+import { ariaKeyshortcuts } from "@/lib/shortcut-keys";
 import { selectActive, useWallpaper, wallpaper, wallpaperStore } from "@/store/wallpaper";
 import { ui, useUi, type PickMode } from "@/store/ui";
 import { ShapeGrid } from "./shape-grid";
@@ -15,6 +17,7 @@ export function ShapePicker() {
   const active = useWallpaper(selectActive);
   const back = useRef<HTMLButtonElement>(null);
   const open = mode !== null;
+  useFocusReturn(open);
 
   useEffect(() => {
     if (open) back.current?.focus({ preventScroll: true });
@@ -30,7 +33,12 @@ export function ShapePicker() {
       className="absolute inset-0 flex flex-col bg-surface-container transition-[translate,opacity] duration-450 ease-emphasized group-data-[panel=mini]/panel:hidden data-[open=false]:translate-x-full"
     >
       <div className="flex items-center gap-2 border-b border-outline-variant px-1 pb-2">
-        <IconButton ref={back} label="Back (Esc)" onClick={ui.closePicker}>
+        <IconButton
+          ref={back}
+          label="Back (Esc)"
+          aria-keyshortcuts={ariaKeyshortcuts("Escape")}
+          onClick={ui.closePicker}
+        >
           <span className="material-symbols-rounded">arrow_back</span>
         </IconButton>
         <span className="text-base font-semibold whitespace-nowrap">

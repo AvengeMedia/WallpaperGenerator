@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { ariaKeyshortcuts } from "@/lib/shortcut-keys";
 import { wallpaper } from "@/store/wallpaper";
 import { FormatPicker } from "./format-picker";
 import { HuePicker } from "./hue-picker";
@@ -23,7 +24,12 @@ export function GlobalTab({ hueTrack, primaryHex }: GlobalTabProps) {
       <HuePicker track={hueTrack} placeholder={primaryHex} />
       <PatternPicker />
       <div className="flex flex-col gap-2 border-t border-outline-variant pt-6">
-        <Button variant="danger" title="Clear everything (R)" onClick={wallpaper.clearAll}>
+        <Button
+          variant="danger"
+          title="Clear everything (X)"
+          aria-keyshortcuts={ariaKeyshortcuts("X")}
+          onClick={wallpaper.clearAll}
+        >
           <span className="material-symbols-rounded">delete_forever</span>
           Clear everything
         </Button>

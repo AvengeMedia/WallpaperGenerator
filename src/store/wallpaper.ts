@@ -17,7 +17,7 @@ import {
   type OverlapColor,
   type PaletteColor,
 } from "@/lib/palette";
-import { PATTERNS, type PatternId } from "@/lib/patterns";
+import { DEFAULT_PATTERN, PATTERNS, type PatternId } from "@/lib/patterns";
 import { clampOpacity, clampScale, defaultPrefs, type Prefs } from "@/lib/prefs";
 import { randomBlob, randomShapeIndex, shapeIndex, SHAPES } from "@/lib/shapes";
 import { loadSaved, persist } from "@/lib/storage";
@@ -116,9 +116,9 @@ const randomPlacement = (canvas: Size, spec: ShapeSpec): Layer => {
     id: newLayerId(),
     ...spec,
     size,
-    x: Math.round(canvas.w / 2 - size / 2 + rnd(-canvas.w / 6, canvas.w / 6)),
-    y: Math.round(canvas.h / 2 - size / 2 + rnd(-canvas.h / 5.4, canvas.h / 5.4)),
-    rot: spec.d !== undefined ? Math.round(rnd(0, 360)) : 0,
+    x: Math.round(canvas.w / 2 - size / 2),
+    y: Math.round(canvas.h / 2 - size / 2),
+    rot: 0,
     fill,
     overlap: randomOverlap(fill),
   };
@@ -156,6 +156,7 @@ const snapshotOf = ({ layers, prefs }: Snapshot) => JSON.stringify({ layers, pre
 export const wallpaperStore = createStore(initialState(), ({ setState, get }) => {
   const undoStack: string[] = [];
   const redoStack: string[] = [];
+  let lastPattern: PatternId | null = null;
   let lastSnap = snapshotOf(get());
   let lastSig = signatureOf(get());
   let lastChange = 0;
@@ -183,8 +184,14 @@ export const wallpaperStore = createStore(initialState(), ({ setState, get }) =>
     historyFlags();
   };
 
+  const rememberPattern = () => {
+    const { pattern } = get().prefs;
+    if (pattern !== "none") lastPattern = pattern;
+  };
+
   const commit = (partial: Partial<WallpaperState>) => {
     patch(partial);
+    rememberPattern();
     track();
   };
 
@@ -213,6 +220,7 @@ export const wallpaperStore = createStore(initialState(), ({ setState, get }) =>
     lastSnap = snapshotOf(get());
     lastSig = signatureOf(get());
     lastChange = 0;
+    rememberPattern();
     historyFlags();
   };
 
@@ -244,8 +252,18 @@ export const wallpaperStore = createStore(initialState(), ({ setState, get }) =>
     },
 
     addLayer,
-    addBlob: () => addLayer({ d: randomBlob() }),
     replaceActiveShape,
+
+    duplicateActive: () => {
+      const { layers, activeId } = get();
+      const i = layers.findIndex((l) => l.id === activeId);
+      if (i < 0) return;
+      const src = layers[i];
+      const copy: Layer = { ...src, id: newLayerId(), x: src.x + 16, y: src.y + 16 };
+      const next = [...layers];
+      next.splice(i + 1, 0, copy);
+      commit({ layers: next, activeId: copy.id });
+    },
 
     shuffleActive: () => {
       const l = active();
@@ -265,10 +283,10 @@ export const wallpaperStore = createStore(initialState(), ({ setState, get }) =>
 
     setActiveFill: (fill: PaletteColor) => updateActive((l) => ({ ...l, fill })),
 
-    cycleActiveFill: () =>
+    cycleActiveFill: (dir: 1 | -1 = 1) =>
       updateActive((l) => ({
         ...l,
-        fill: PALETTE[(PALETTE.indexOf(l.fill) + 1) % PALETTE.length],
+        fill: PALETTE[(PALETTE.indexOf(l.fill) + dir + PALETTE.length) % PALETTE.length],
       })),
 
     setActiveOverlap: (overlap: OverlapColor) => updateActive((l) => ({ ...l, overlap })),
@@ -313,6 +331,11 @@ export const wallpaperStore = createStore(initialState(), ({ setState, get }) =>
     setHue: (hue: number) => commit({ prefs: { ...get().prefs, hue: normDeg(hue) } }),
 
     setPattern,
+
+    togglePattern: () => {
+      const { pattern } = get().prefs;
+      setPattern(pattern === "none" ? (lastPattern ?? DEFAULT_PATTERN) : "none");
+    },
 
     cyclePattern: (dir: 1 | -1) => {
       const i = PATTERNS.indexOf(get().prefs.pattern);

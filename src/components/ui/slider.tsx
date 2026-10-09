@@ -39,6 +39,7 @@ export function Slider({
   const [width, setWidth] = useState(0);
   const [pressed, setPressed] = useState(false);
   const [focused, setFocused] = useState(false);
+  const pointerFocus = useRef(false);
 
   useLayoutEffect(() => {
     const el = wrap.current;
@@ -55,12 +56,6 @@ export function Slider({
   const activeWidth = Math.max(0, x - GAP);
   const inactiveLeft = Math.min(width, x + GAP);
 
-  /**
-   * Maps a pointer position to a value ourselves, so the painted handle always sits under the
-   * cursor. The input is kept for keyboard and assistive tech only: left to translate pointer
-   * positions itself it insets the travel by half its thumb width, which is invisible here and
-   * so can only be guessed at.
-   */
   const seek = useCallback(
     (clientX: number) => {
       const rect = wrap.current?.getBoundingClientRect();
@@ -76,7 +71,6 @@ export function Slider({
     if (e.currentTarget.hasPointerCapture(e.pointerId))
       e.currentTarget.releasePointerCapture(e.pointerId);
     setPressed(false);
-    input.current?.blur();
     onPointerUp?.(e);
     if (cancelled) onPointerCancel?.(e);
   };
@@ -89,6 +83,9 @@ export function Slider({
     <div
       ref={wrap}
       onPointerDown={(e) => {
+        pointerFocus.current = true;
+        setFocused(false);
+        e.preventDefault();
         e.currentTarget.setPointerCapture(e.pointerId);
         setPressed(true);
         input.current?.focus();
@@ -117,9 +114,33 @@ export function Slider({
         value={value}
         aria-label={label}
         onChange={(e) => onChange(+e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Home") {
+            e.preventDefault();
+            onChange(min);
+            return;
+          }
+          if (e.key === "End") {
+            e.preventDefault();
+            onChange(max);
+            return;
+          }
+          const dir =
+            e.key === "ArrowLeft" || e.key === "ArrowDown"
+              ? -1
+              : e.key === "ArrowRight" || e.key === "ArrowUp"
+                ? 1
+                : 0;
+          if (!e.shiftKey || !dir) return;
+          e.preventDefault();
+          onChange(clamp(+(value + dir * step * 10).toFixed(4), min, max));
+        }}
         className="pointer-events-none absolute inset-0 m-0 h-full w-full appearance-none opacity-0"
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
+        onFocus={() => setFocused(!pointerFocus.current)}
+        onBlur={() => {
+          pointerFocus.current = false;
+          setFocused(false);
+        }}
       />
       <div
         aria-hidden

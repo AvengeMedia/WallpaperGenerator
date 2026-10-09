@@ -39,6 +39,7 @@ export function Tabs<T extends string>({ tabs, value, onChange, label }: TabsPro
     const n = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
     if (n === undefined) return;
     e.preventDefault();
+    e.stopPropagation();
     const next = tabs[(n + tabs.length) % tabs.length];
     onChange(next.id);
     const buttons = list.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]');

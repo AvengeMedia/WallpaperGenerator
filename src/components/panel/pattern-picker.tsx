@@ -51,10 +51,14 @@ export function PatternPicker() {
   return (
     <>
       <div className="flex flex-col gap-2">
-        <FieldLabel icon={<span className="material-symbols-rounded">texture</span>}>
+        <FieldLabel
+          icon={<span className="material-symbols-rounded">texture</span>}
+          htmlFor="pattern-select"
+        >
           Pattern
         </FieldLabel>
         <RadioGroup<PatternId>
+          id="pattern-select"
           label="Background pattern"
           value={pattern}
           onChange={wallpaper.setPattern}
@@ -69,6 +73,7 @@ export function PatternPicker() {
         <FieldLabel
           icon={<span className="material-symbols-rounded">open_in_full</span>}
           htmlFor="pattern-scale"
+          title="Pattern size: R and F while in background mode"
         >
           Pattern size
         </FieldLabel>
@@ -86,6 +91,7 @@ export function PatternPicker() {
         <FieldLabel
           icon={<span className="material-symbols-rounded">contrast</span>}
           htmlFor="pattern-opacity"
+          title="Pattern strength: ← and → or T and G while in background mode"
         >
           Pattern strength
         </FieldLabel>
