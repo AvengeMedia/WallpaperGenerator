@@ -73,27 +73,3 @@ jobs:
           docker manifest annotate --arch amd64 --os linux ${{ env.IMAGE }}:${{ github.run_id }} ${{ env.IMAGE }}:${{ github.run_id }}-amd64
           docker manifest annotate --arch arm64 --os linux ${{ env.IMAGE }}:${{ github.run_id }} ${{ env.IMAGE }}:${{ github.run_id }}-arm64
           docker manifest push ${{ env.IMAGE }}:${{ github.run_id }}
-
-  deploy:
-    name: Deploy
-    needs: create_manifest
-    runs-on: ubuntu-24.04
-    environment:
-      name: production
-      url: https://wallpaper.danklinux.com
-    steps:
-      - uses: actions/checkout@v4
-      - uses: imranismail/setup-kustomize@v1
-        with:
-          kustomize-version: "3.5.4"
-      - name: Set image
-        working-directory: ./k8s
-        run: |
-          kustomize edit set image replaceme=${{ env.IMAGE }}:${{ github.run_id }}
-          kustomize build . > deployment-k.yaml
-      - name: Deploy to cluster
-        uses: bbedward/kubectl@master
-        env:
-          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
-        with:
-          args: apply -f ./k8s/deployment-k.yaml
