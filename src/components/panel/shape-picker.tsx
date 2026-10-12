@@ -48,7 +48,12 @@ export function ShapePicker() {
       <ShapeGrid
         className="min-h-0 flex-1 grid-cols-4 px-1 pt-3 pb-1"
         currentShape={replacing ? active?.shape : undefined}
-        onPick={(spec) => pickShape(mode!, spec)}
+        onPick={(spec, shiftKey) => {
+          pickShape(mode!, spec);
+          if (!shiftKey || replacing) {
+            ui.closePicker();
+          }
+        }}
       />
     </section>
   );

@@ -81,8 +81,8 @@ const groups = ({ move, rotate }: Labels): { title: string; rows: Row[] }[] => [
   {
     title: "Global",
     rows: [
-      { label: "Undo", hint: `or ${keyLabel("Mod+Y")}`, keys: keyParts("Mod+Z") },
-      { label: "Redo", keys: keyParts("Mod+Shift+Z") },
+      { label: "Undo", keys: keyParts("Mod+Z") },
+      { label: "Redo", hint: `or ${keyLabel("Mod+Y")}`, keys: keyParts("Mod+Shift+Z") },
       { label: "Export menu", keys: keyParts("Mod+S") },
       { label: "Cycle the panel", hint: "full → mini → hidden", keys: ["P"] },
       { label: "Surprise me (clear + randomize)", hint: "press again to confirm", keys: ["I"] },
@@ -102,6 +102,11 @@ const groups = ({ move, rotate }: Labels): { title: string; rows: Row[] }[] => [
         keys: ["←", "→"],
       },
       { label: "Browse the shape grid", keys: ["←", "→", "↑", "↓"] },
+      {
+        label: "Select shape without closing picker",
+        hint: "Shift + Click for mouse",
+        keys: ["Shift", "Enter"],
+      },
     ],
   },
 ];
