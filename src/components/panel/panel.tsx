@@ -41,8 +41,8 @@ export function Panel({ hueTrack, primaryHex }: PanelProps) {
       data-panel={panel}
       onKeyDown={onPanelKeyDown}
       className={cn(
-        "group/panel relative flex shrink-0 flex-col overflow-hidden rounded-[28px] bg-surface-container pb-3 text-sm text-on-surface transition-[width,background-color] duration-300 ease-[cubic-bezier(0.2,0,0,1)] max-md:max-h-[48%] max-md:w-auto",
-        mini ? "w-[72px] p-2 pb-3" : "w-80 px-2 pt-2",
+        "group/panel relative flex shrink-0 flex-col overflow-hidden rounded-[28px] bg-surface-container text-sm text-on-surface transition-[width,background-color] duration-300 ease-[cubic-bezier(0.2,0,0,1)] max-md:max-h-[48%] max-md:w-auto",
+        mini ? "w-[72px] p-2 pb-0" : "w-80 px-2 pt-2",
       )}
     >
       <div
@@ -53,7 +53,7 @@ export function Panel({ hueTrack, primaryHex }: PanelProps) {
           <div
             inert={picking}
             className={cn(
-              "absolute inset-0 flex flex-col transition-[translate,scale,opacity] duration-450 ease-emphasized",
+              "absolute inset-0 flex flex-col pt-2 transition-[translate,scale,opacity] duration-450 ease-emphasized",
               picking && "-translate-x-[18%] scale-90 opacity-0",
               mini && "hidden",
             )}
@@ -69,7 +69,7 @@ export function Panel({ hueTrack, primaryHex }: PanelProps) {
                 <ShapeTab />
               )}
             </div>
-            <div className="flex items-center gap-2 px-2 pt-3">
+            <div className="flex items-center gap-2 px-2 py-3">
               <SurpriseButton />
               <AddShapeButton mini={false} />
             </div>
@@ -77,7 +77,7 @@ export function Panel({ hueTrack, primaryHex }: PanelProps) {
           <ShapePicker />
         </div>
         {mini && (
-          <div className="align-center flex flex-col items-center gap-2">
+          <div className="align-center flex flex-col items-center gap-2 pb-3">
             <SurpriseButton />
             <AddShapeButton mini />
           </div>

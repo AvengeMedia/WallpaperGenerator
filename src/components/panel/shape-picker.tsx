@@ -30,7 +30,7 @@ export function ShapePicker() {
       aria-label="Shape picker"
       inert={!open}
       data-open={open}
-      className="absolute inset-0 flex flex-col bg-surface-container transition-[translate,opacity] duration-450 ease-emphasized group-data-[panel=mini]/panel:hidden data-[open=false]:translate-x-full"
+      className="absolute inset-0 flex flex-col bg-surface-container pt-2 transition-[translate,opacity] duration-450 ease-emphasized group-data-[panel=mini]/panel:hidden data-[open=false]:translate-x-full"
     >
       <div className="flex items-center gap-2 border-b border-outline-variant px-1 pb-2">
         <IconButton
