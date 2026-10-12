@@ -19,7 +19,7 @@ import {
 } from "@/lib/palette";
 import { DEFAULT_PATTERN, PATTERNS, type PatternId } from "@/lib/patterns";
 import { clampOpacity, clampScale, defaultPrefs, type Prefs } from "@/lib/prefs";
-import { isBlob, randomBlob, randomShapeIndex, shapeIndex, SHAPES } from "@/lib/shapes";
+import { createBlob, isBlob, randomBlob, randomShapeIndex, shapeIndex, SHAPES } from "@/lib/shapes";
 import { loadSaved, persist } from "@/lib/storage";
 import { normDeg, pickRandom, rnd } from "@/lib/utils";
 
@@ -278,7 +278,7 @@ export const wallpaperStore = createStore(initialState(), ({ setState, get }) =>
       if (!l) return;
       replaceActiveShape(
         isBlob(l)
-          ? { type: "blob", ...randomBlob() }
+          ? { type: "blob", ...createBlob(l.points.length, l.smoothness) }
           : { type: "shape", shape: randomShapeIndex(l.shape) },
       );
     },

@@ -21,10 +21,6 @@ export const focusCanvas = () => tryFocus(canvasEl());
 export const focusSidebar = (edge: "start" | "end" = "start") => {
   const bar = sidebarEl();
   if (!bar) return false;
-  if (edge === "start") {
-    const tab = bar.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]');
-    if (tab && isTabStop(tab) && tryFocus(tab)) return true;
-  }
   const items = focusablesOf(bar);
   const order = edge === "start" ? items : [...items].reverse();
   for (const target of order) if (tryFocus(target)) return true;
