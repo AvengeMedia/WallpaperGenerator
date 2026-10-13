@@ -5,12 +5,12 @@ import {
   type UseHotkeyOptions,
 } from "@tanstack/react-hotkeys";
 import { openShapes } from "@/components/panel/shape-tab";
-import { describeShape } from "@/lib/describe";
-import { focusCanvas, focusSidebar, sidebarEl } from "@/components/ui/focus";
+import { canvasEl, sidebarEl } from "@/lib/focus-dom";
+import { focusCanvas, focusSidebar, selectAndAnnounce } from "@/a11y/focus-zones";
 import { PALETTE } from "@/lib/palette";
 import { patternLabel } from "@/lib/patterns";
 import { clamp, normDeg, round } from "@/lib/utils";
-import { say, sayActive, sayLayerPosition } from "@/hooks/shortcuts/announce";
+import { say, sayActive, sayLayerPosition } from "@/a11y/announce";
 import { armable } from "@/hooks/shortcuts/arm";
 import {
   selectActive,
@@ -81,16 +81,25 @@ const deleteActive = () => {
 };
 
 const stepZone = (direction: 1 | -1, event: KeyboardEvent) => {
+  // Step shapes only for keydowns that started on the canvas.
+  // Prevents tabbing out of the controls focuses the second instead of the first shape
+  // because the canvas itself handles the tab as well
+  const canvas = canvasEl();
+  if (!canvas || !(event.target instanceof Element) || !canvas.contains(event.target)) return;
+
   const { layers, activeId } = wallpaperStore.state;
   const activeIndex = layers.findIndex((layer) => layer.id === activeId);
   const next = activeIndex < 0 ? (direction > 0 ? 0 : layers.length - 1) : activeIndex + direction;
+
   if (next < 0 || next >= layers.length) {
-    if (focusSidebar(direction > 0 ? "start" : "end")) event.preventDefault();
+    // Forward past the top shape exits to the browser (native behavior)
+    // backward past the bottom shape goes to the sidebar
+    if (direction < 0 && focusSidebar("end")) event.preventDefault();
     return;
   }
+
   event.preventDefault();
-  wallpaper.select(layers[next].id);
-  say(describeShape(layers[next]), 120);
+  selectAndAnnounce(layers[next]);
 };
 
 const switchZone = (edge: "start" | "end", canvasFocused: boolean) => {

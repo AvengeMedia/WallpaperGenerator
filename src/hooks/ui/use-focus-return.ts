@@ -1,5 +1,5 @@
 import { useEffect, useRef, type RefObject } from "react";
-import { focusCanvas } from "@/components/ui/focus";
+import { focusCanvas } from "@/a11y/focus-zones";
 
 const usable = (element: HTMLElement | null): element is HTMLElement =>
   !!element &&
@@ -27,6 +27,6 @@ export function useFocusReturn<T extends HTMLElement>(
     const element = opener.current ?? openerRef?.current ?? null;
     opener.current = null;
     if (usable(element)) element.focus({ preventScroll: true });
-    else focusCanvas();
+    else focusCanvas(undefined, { keepSelection: true });
   }, [open, openerRef]);
 }

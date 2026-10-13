@@ -19,7 +19,11 @@ const groups = ({ move, rotate }: Labels): { title: string; rows: Row[] }[] => [
   {
     title: "Focus & selection",
     rows: [
-      { label: "Next / previous shape", hint: "walks the stacking order", keys: ["Tab"] },
+      {
+        label: "Next / previous shape",
+        hint: "walks the stacking order, leaves the page at the top shape",
+        keys: ["Tab"],
+      },
       { label: "Leave the canvas for the sidebar", hint: "keeps the selection", keys: ["Esc"] },
       { label: "Switch canvas ↔ sidebar", keys: ["F6"] },
       { label: "Open the shape picker", keys: ["N"] },
@@ -93,8 +97,7 @@ const groups = ({ move, rotate }: Labels): { title: string; rows: Row[] }[] => [
   {
     title: "Sidebar",
     rows: [
-      { label: "Move between controls", keys: ["Tab"] },
-      { label: "Back to the canvas from the first control", keys: ["Shift", "Tab"] },
+      { label: "Tab from the last control continues to the bottom shape", keys: ["Tab"] },
       { label: "Choose inside a group (colors, patterns, formats…)", keys: ["←", "→"] },
       {
         label: "Adjust a slider",

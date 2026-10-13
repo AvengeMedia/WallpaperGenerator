@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { ExportMenu } from "@/components/panel/export-menu";
-import { useWallpaper, wallpaper, wallpaperStore } from "@/store/wallpaper";
+import { useWallpaper } from "@/store/wallpaper";
 import { ui, useUi } from "@/store/ui";
 import { BgModeBadge } from "./bg-mode-badge";
 import { Stage } from "./stage";
@@ -9,7 +9,6 @@ export function Preview() {
   const canvas = useWallpaper((state) => state.canvas);
   const hidden = useUi((state) => state.panel === "hidden");
   const ref = useRef<HTMLDivElement>(null);
-  const pointerFocus = useRef(false);
   const [scale, setScale] = useState(1);
 
   useLayoutEffect(() => {
@@ -37,18 +36,11 @@ export function Preview() {
   const onPointerDown = () => {
     const containerElement = ref.current;
     if (!containerElement || document.activeElement === containerElement) return;
-    pointerFocus.current = true;
     containerElement.focus({ preventScroll: true });
   };
 
   const onFocus = () => {
     ui.setCanvasFocused(true);
-    if (pointerFocus.current) {
-      pointerFocus.current = false;
-      return;
-    }
-    const { layers, activeId: selected } = wallpaperStore.state;
-    if (layers.length && !selected) wallpaper.select(layers[0].id);
   };
 
   return (
@@ -67,7 +59,7 @@ export function Preview() {
         onFocus={onFocus}
         onBlur={() => ui.setCanvasFocused(false)}
         onPointerDown={onPointerDown}
-        className="relative overflow-hidden bg-surface shadow-[0_0_0_1px] shadow-on-surface/14 outline-none"
+        className="relative overflow-hidden bg-surface shadow-[0_0_0_1px] shadow-on-surface/14 focus-ring"
         style={style}
       >
         <Stage scale={scale} />

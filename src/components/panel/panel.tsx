@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
-import { focusCanvas, isFirstFocusable } from "@/components/ui/focus";
+import { focusCanvas } from "@/a11y/focus-zones";
+import { isLastFocusable } from "@/lib/focus-dom";
 import { ariaKeyshortcuts } from "@/lib/shortcut-keys";
 import { cn } from "@/lib/utils";
 import { wallpaper } from "@/store/wallpaper";
@@ -29,11 +30,15 @@ export function Panel({ hueTrack, primaryHex }: PanelProps) {
   if (panel === "hidden") return null;
   const mini = panel === "mini";
 
+  // Tab on the last control continues to the shapes. Shift+Tab on the first
+  // control leaves natively.
   const onPanelKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
-    if (event.key !== "Tab" || !event.shiftKey) return;
-    if (!isFirstFocusable(document.activeElement, event.currentTarget)) return;
+    if (event.key !== "Tab" || event.shiftKey || event.ctrlKey || event.altKey || event.metaKey)
+      return;
+    const panelEl = event.currentTarget;
+    if (!isLastFocusable(document.activeElement, panelEl)) return;
     event.preventDefault();
-    focusCanvas();
+    focusCanvas("first");
   };
 
   return (
