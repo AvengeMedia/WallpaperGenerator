@@ -6,6 +6,7 @@ import { BASE_HUE } from "@/lib/theme";
 import { normDeg } from "@/lib/utils";
 import { useWallpaper, wallpaper } from "@/store/wallpaper";
 import { ui } from "@/store/ui";
+import { Palette } from "material-symbols/rounded";
 
 interface HuePickerProps {
   track: string;
@@ -39,7 +40,7 @@ export function HuePicker({ track, placeholder }: HuePickerProps) {
 
   return (
     <div className="flex flex-col gap-2">
-      <FieldLabel icon={<span className="material-symbols-rounded">palette</span>} htmlFor="hue">
+      <FieldLabel icon={<Palette />} htmlFor="hue">
         Hue
       </FieldLabel>
       <Slider

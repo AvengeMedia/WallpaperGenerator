@@ -4,11 +4,11 @@ import { cn } from "@/lib/utils";
 
 interface TabDef<T extends string> {
   id: T;
-  label: string;
-  icon: ReactNode;
+  label: ReactNode | ((selected: boolean, activeTab: T) => ReactNode);
+  icon?: ReactNode | ((selected: boolean, activeTab: T) => ReactNode);
 }
 
-interface TabsProps<T extends string> {
+export interface TabsProps<T extends string> {
   tabs: readonly TabDef<T>[];
   value: T;
   onChange: (id: T) => void;
@@ -84,8 +84,8 @@ export function Tabs<T extends string>({ tabs, value, onChange, label }: TabsPro
               selected ? "text-primary" : "text-on-surface-variant",
             )}
           >
-            {tab.icon}
-            {tab.label}
+            {typeof tab.icon === "function" ? tab.icon(selected, value) : tab.icon}
+            {typeof tab.label === "function" ? tab.label(selected, value) : tab.label}
           </button>
         );
       })}

@@ -5,6 +5,7 @@ import { FormatPicker } from "./format-picker";
 import { HuePicker } from "./hue-picker";
 import { PatternPicker } from "./pattern-picker";
 import { ThemeToggle } from "./theme-toggle";
+import { DeleteForever } from "material-symbols/rounded";
 
 interface GlobalTabProps {
   hueTrack: string;
@@ -30,7 +31,7 @@ export function GlobalTab({ hueTrack, primaryHex }: GlobalTabProps) {
           aria-keyshortcuts={ariaKeyshortcuts("X")}
           onClick={wallpaper.clearAll}
         >
-          <span className="material-symbols-rounded">delete_forever</span>
+          <DeleteForever />
           Clear everything
         </Button>
       </div>

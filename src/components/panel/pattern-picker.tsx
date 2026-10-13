@@ -11,6 +11,7 @@ import {
   type PatternId,
 } from "@/lib/patterns";
 import { useWallpaper, wallpaper } from "@/store/wallpaper";
+import { Contrast, OpenInFull, Texture } from "material-symbols/rounded";
 
 function PatternTile({ id }: { id: PatternId }) {
   const tile = usePatternTile(id);
@@ -51,10 +52,7 @@ export function PatternPicker() {
   return (
     <>
       <div className="flex flex-col gap-2">
-        <FieldLabel
-          icon={<span className="material-symbols-rounded">texture</span>}
-          htmlFor="pattern-select"
-        >
+        <FieldLabel icon={<Texture />} htmlFor="pattern-select">
           Pattern
         </FieldLabel>
         <RadioGroup<PatternId>
@@ -71,7 +69,7 @@ export function PatternPicker() {
       </div>
       <div className="flex flex-col gap-2">
         <FieldLabel
-          icon={<span className="material-symbols-rounded">open_in_full</span>}
+          icon={<OpenInFull />}
           htmlFor="pattern-scale"
           title="Pattern size: R and F while in background mode"
         >
@@ -89,7 +87,7 @@ export function PatternPicker() {
       </div>
       <div className="flex flex-col gap-2">
         <FieldLabel
-          icon={<span className="material-symbols-rounded">contrast</span>}
+          icon={<Contrast />}
           htmlFor="pattern-opacity"
           title="Pattern strength: ← and → or T and G while in background mode"
         >

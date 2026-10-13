@@ -3,6 +3,7 @@ import { IconButton } from "@/components/ui/icon-button";
 import { Kbd } from "@/components/ui/kbd";
 import { keyLabel, keyParts } from "@/lib/shortcut-keys";
 import { ui, useUi } from "@/store/ui";
+import { Close } from "material-symbols/rounded";
 
 interface Row {
   label: ReactNode;
@@ -160,7 +161,7 @@ export function ShortcutsDialog() {
           aria-keyshortcuts="Escape"
           onClick={() => ui.setShortcutsOpen(false)}
         >
-          <span className="material-symbols-rounded">close</span>
+          <Close />
         </IconButton>
       </div>
       <div

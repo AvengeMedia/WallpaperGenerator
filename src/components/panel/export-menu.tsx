@@ -7,6 +7,7 @@ import { ariaKeyshortcuts, keyLabel } from "@/lib/shortcut-keys";
 import { clamp } from "@/lib/utils";
 import { useWallpaper } from "@/store/wallpaper";
 import { ui, useUi } from "@/store/ui";
+import { Download, Image, DataObject, Wallpaper } from "material-symbols/rounded";
 
 const MENU_WIDTH = 212;
 const GAP = 6;
@@ -130,7 +131,7 @@ export function ExportMenu({ trigger = true, align = "end" }: ExportMenuProps) {
           aria-expanded={open}
           onClick={() => ui.setExportMenuOpen(!open)}
         >
-          <span className="material-symbols-rounded">download</span>
+          <Download />
         </IconButton>
       )}
       {open &&
@@ -151,25 +152,25 @@ export function ExportMenu({ trigger = true, align = "end" }: ExportMenuProps) {
             className="fixed z-50 flex w-[212px] animate-fade-up flex-col gap-0.5 rounded-2xl bg-surface-container-high p-2 shadow-[0_2px_6px_rgba(0,0,0,.25),0_8px_24px_rgba(0,0,0,.2)]"
           >
             {item(
-              <span className="material-symbols-rounded">image</span>,
+              <Image />,
               "PNG 2×",
               `${canvas.width * 2} × ${canvas.height * 2}`,
               () => void exportPng(2),
             )}
             {item(
-              <span className="material-symbols-rounded">image</span>,
+              <Image />,
               "PNG 1×",
               `${canvas.width} × ${canvas.height}`,
               () => void exportPng(1),
             )}
             {item(
-              <span className="material-symbols-rounded">data_object</span>,
+              <DataObject />,
               "JSON layout",
               "Import as a wallpaper in DankMaterialShell",
               exportJson,
             )}
             {item(
-              <span className="material-symbols-rounded">wallpaper</span>,
+              <Wallpaper />,
               "Install in DMS",
               "Opens DankMaterialShell on this machine",
               installInDms,

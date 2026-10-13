@@ -5,6 +5,7 @@ import { ariaKeyshortcuts, keyLabel } from "@/lib/shortcut-keys";
 import { useWallpaper, wallpaper } from "@/store/wallpaper";
 import { ui, useUi } from "@/store/ui";
 import { ExportMenu } from "./export-menu";
+import { KeyboardAlt, Menu, MenuOpen, Redo, Undo, Upload } from "material-symbols/rounded";
 
 export function Toolbar() {
   const { canUndo, canRedo } = useWallpaper((state) => ({
@@ -24,11 +25,7 @@ export function Toolbar() {
         aria-expanded={panel === "full"}
         onClick={ui.toggleMini}
       >
-        {panel === "full" ? (
-          <span className="material-symbols-rounded">menu_open</span>
-        ) : (
-          <span className="material-symbols-rounded">menu</span>
-        )}
+        {panel === "full" ? <MenuOpen /> : <Menu />}
       </IconButton>
       <IconButton
         label="Keyboard shortcuts (?)"
@@ -36,7 +33,7 @@ export function Toolbar() {
         variant="text"
         onClick={() => ui.setShortcutsOpen(true)}
       >
-        <span className="material-symbols-rounded">keyboard_alt</span>
+        <KeyboardAlt />
       </IconButton>
       <span className="flex-1 group-data-[panel=mini]/panel:hidden" />
       <div className="contents group-data-[panel=mini]/panel:hidden">
@@ -45,7 +42,7 @@ export function Toolbar() {
           variant="text"
           onClick={() => fileInput.current?.click()}
         >
-          <span className="material-symbols-rounded">upload</span>
+          <Upload />
         </IconButton>
       </div>
       <ExportMenu align={panel === "mini" ? "start" : "end"} />
@@ -56,7 +53,7 @@ export function Toolbar() {
         disabled={!canUndo}
         onClick={wallpaper.undo}
       >
-        <span className="material-symbols-rounded">undo</span>
+        <Undo />
       </IconButton>
       <IconButton
         label={`Redo (${keyLabel("Mod+Shift+Z")})`}
@@ -65,7 +62,7 @@ export function Toolbar() {
         disabled={!canRedo}
         onClick={wallpaper.redo}
       >
-        <span className="material-symbols-rounded">redo</span>
+        <Redo />
       </IconButton>
       <input
         ref={fileInput}

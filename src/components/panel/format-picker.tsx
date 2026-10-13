@@ -10,6 +10,7 @@ import {
   type Orientation,
 } from "@/lib/formats";
 import { useWallpaper, wallpaper } from "@/store/wallpaper";
+import { ImageAspectRatio } from "material-symbols/rounded";
 
 const orientations = [
   { value: "landscape", label: "Landscape" },
@@ -43,9 +44,7 @@ export function FormatPicker() {
 
   return (
     <div className="flex flex-col gap-2">
-      <FieldLabel icon={<span className="material-symbols-rounded">image_aspect_ratio</span>}>
-        Format
-      </FieldLabel>
+      <FieldLabel icon={<ImageAspectRatio />}>Format</FieldLabel>
       <RadioGroup<FormatId>
         label="Screen proportions"
         value={format}

@@ -19,6 +19,27 @@ import {
   SMOOTHNESS,
   SmoothnessIndex,
 } from "@/lib/shapes";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Shapes,
+  Shuffle,
+  OneHundredTwentyThree,
+  LineCurve,
+  FormatColorFill,
+  Layers,
+  Block,
+  OpenInFull,
+  Opacity,
+  RotateRight,
+  Stacks,
+  FlipToBack,
+  ArrowDownward,
+  FlipToFront,
+  ArrowUpward,
+  ContentCopy,
+  Delete,
+} from "material-symbols/rounded";
 
 export const openShapes = (mode: "add" | "replace") =>
   ui.panelHidden() ? ui.openSheet(mode) : ui.openPicker(mode);
@@ -64,7 +85,7 @@ export function ShapeTab() {
           disabled={count < 2}
           onClick={() => wallpaper.stepActive(-1)}
         >
-          <span className="material-symbols-rounded">chevron_left</span>
+          <ChevronLeft />
         </IconButton>
         <span aria-live="polite" className="text-sm font-medium text-on-surface-variant">
           Shape {index + 1} of {count}
@@ -75,7 +96,7 @@ export function ShapeTab() {
           disabled={count < 2}
           onClick={() => wallpaper.stepActive(1)}
         >
-          <span className="material-symbols-rounded">chevron_right</span>
+          <ChevronRight />
         </IconButton>
       </div>
 
@@ -86,9 +107,9 @@ export function ShapeTab() {
           onClick={() => openShapes("replace")}
           className="inline-flex h-9 gap-1.5 rounded-[18px] px-3 py-0 text-[15px] font-semibold active:rounded-[10px] [&>svg]:size-5"
         >
-          <span className="material-symbols-rounded">shapes</span>
+          <Shapes />
           {layerName(active)}
-          <span className="material-symbols-rounded">chevron_right</span>
+          <ChevronRight />
         </Button>
         <IconButton
           variant="tonal"
@@ -98,7 +119,7 @@ export function ShapeTab() {
           onClick={wallpaper.shuffleActive}
           className="ml-auto rounded-[18px] active:rounded-[10px]"
         >
-          <span className="material-symbols-rounded">shuffle</span>
+          <Shuffle />
         </IconButton>
       </div>
 
@@ -106,7 +127,7 @@ export function ShapeTab() {
         <>
           <div className="flex flex-col gap-2">
             <FieldLabel
-              icon={<span className="material-symbols-rounded">123</span>}
+              icon={<OneHundredTwentyThree />}
               htmlFor="sm-edges"
               value={active.points.length}
             >
@@ -126,11 +147,7 @@ export function ShapeTab() {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <FieldLabel
-              icon={<span className="material-symbols-rounded">line_curve</span>}
-              htmlFor="sm-smoothness"
-              value={active.smoothness}
-            >
+            <FieldLabel icon={<LineCurve />} htmlFor="sm-smoothness" value={active.smoothness}>
               Smoothness
             </FieldLabel>
             <Slider
@@ -151,10 +168,7 @@ export function ShapeTab() {
         </>
       )}
       <div className="flex flex-col gap-2">
-        <FieldLabel
-          icon={<span className="material-symbols-rounded">format_color_fill</span>}
-          title="Fill color: 1–8, C cycles"
-        >
+        <FieldLabel icon={<FormatColorFill />} title="Fill color: 1–8, C cycles">
           Color
         </FieldLabel>
         <RadioGroup<PaletteColor>
@@ -171,7 +185,7 @@ export function ShapeTab() {
 
       <div className="flex flex-col gap-2">
         <FieldLabel
-          icon={<span className="material-symbols-rounded">layers</span>}
+          icon={<Layers />}
           title="Overlap color: Shift+1–8, Shift+0 for none. The shape on top decides the overlap color where shapes meet."
           value={
             index === 0 ? (
@@ -196,7 +210,7 @@ export function ShapeTab() {
             aria-label="No overlap color"
             className="inline-flex size-[30px] items-center justify-center rounded-full border-0 bg-surface-container-high p-0 text-on-surface-variant focus-ring data-checked:outline-3 data-checked:outline-offset-2 data-checked:outline-primary [&>svg]:size-[18px]"
           >
-            <span className="material-symbols-rounded">block</span>
+            <Block />
           </RadioItem>
           {PALETTE.map((color) => (
             <Swatch key={color} color={color} />
@@ -206,7 +220,7 @@ export function ShapeTab() {
 
       <div className="flex flex-col gap-2">
         <FieldLabel
-          icon={<span className="material-symbols-rounded">open_in_full</span>}
+          icon={<OpenInFull />}
           htmlFor="sm-size"
           value={`${size}%`}
           title="Size: R and F (Shift for 10 px), or scroll"
@@ -227,7 +241,7 @@ export function ShapeTab() {
 
       <div className="flex flex-col gap-2">
         <FieldLabel
-          icon={<span className="material-symbols-rounded">opacity</span>}
+          icon={<Opacity />}
           htmlFor="sm-opacity"
           value={`${opacity}%`}
           title="Opacity: T and G (Shift for 10%)"
@@ -249,7 +263,7 @@ export function ShapeTab() {
 
       <div className="flex flex-col gap-2">
         <FieldLabel
-          icon={<span className="material-symbols-rounded">rotate_right</span>}
+          icon={<RotateRight />}
           htmlFor="sm-rotation"
           value={`${rotation}°`}
           title="Rotation: , and . or Q and E (Shift snaps to 15°)"
@@ -269,7 +283,7 @@ export function ShapeTab() {
 
       <div className="flex flex-col gap-2">
         <FieldLabel
-          icon={<span className="material-symbols-rounded">stacks</span>}
+          icon={<Stacks />}
           title="Layer: U forward, J back (Shift jumps to front / back)"
         >
           Layer
@@ -280,7 +294,7 @@ export function ShapeTab() {
             aria-keyshortcuts={ariaKeyshortcuts("Shift+J")}
             onClick={() => wallpaper.reorderActive(-Infinity)}
           >
-            <span className="material-symbols-rounded">flip_to_back</span>
+            <FlipToBack />
             To back
           </Button>
           <Button
@@ -288,7 +302,7 @@ export function ShapeTab() {
             aria-keyshortcuts={ariaKeyshortcuts("J")}
             onClick={() => wallpaper.reorderActive(-1)}
           >
-            <span className="material-symbols-rounded">arrow_downward</span>
+            <ArrowDownward />
             Backward
           </Button>
           <Button
@@ -296,7 +310,7 @@ export function ShapeTab() {
             aria-keyshortcuts={ariaKeyshortcuts("Shift+U")}
             onClick={() => wallpaper.reorderActive(Infinity)}
           >
-            <span className="material-symbols-rounded">flip_to_front</span>
+            <FlipToFront />
             To front
           </Button>
           <Button
@@ -304,7 +318,7 @@ export function ShapeTab() {
             aria-keyshortcuts={ariaKeyshortcuts("U")}
             onClick={() => wallpaper.reorderActive(1)}
           >
-            <span className="material-symbols-rounded">arrow_upward</span>
+            <ArrowUpward />
             Forward
           </Button>
         </div>
@@ -317,7 +331,7 @@ export function ShapeTab() {
           aria-keyshortcuts={ariaKeyshortcuts("Mod+D")}
           onClick={wallpaper.duplicateActive}
         >
-          <span className="material-symbols-rounded">content_copy</span>
+          <ContentCopy />
           Duplicate
         </Button>
         <Button
@@ -326,7 +340,7 @@ export function ShapeTab() {
           aria-keyshortcuts={ariaKeyshortcuts("Delete")}
           onClick={wallpaper.deleteActive}
         >
-          <span className="material-symbols-rounded">delete</span>
+          <Delete />
           Delete
         </Button>
       </div>

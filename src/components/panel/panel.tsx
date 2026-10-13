@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Tabs } from "@/components/ui/tabs";
+import { Tabs, TabsProps } from "@/components/ui/tabs";
 import { focusCanvas } from "@/a11y/focus-zones";
 import { isLastFocusable } from "@/lib/focus-dom";
 import { ariaKeyshortcuts } from "@/lib/shortcut-keys";
@@ -10,11 +10,21 @@ import { GlobalTab } from "./global-tab";
 import { ShapePicker } from "./shape-picker";
 import { ShapeTab } from "./shape-tab";
 import { Toolbar } from "./toolbar";
+import { Add, Casino, Shapes, Tune } from "material-symbols/rounded";
+import { Shapes as ShapesFilled } from "material-symbols/rounded/filled";
 
 const tabs = [
-  { id: "global", label: "Global", icon: <span className="material-symbols-rounded">tune</span> },
-  { id: "shape", label: "Shape", icon: <span className="material-symbols-rounded">shapes</span> },
-] as const satisfies readonly { id: Tab; label: string; icon: React.ReactNode }[];
+  {
+    id: "global",
+    label: "Global",
+    icon: <Tune />,
+  },
+  {
+    id: "shape",
+    label: "Shape",
+    icon: (selected) => (selected ? <ShapesFilled /> : <Shapes />),
+  },
+] as const satisfies TabsProps<Tab>["tabs"];
 
 interface PanelProps {
   hueTrack: string;
@@ -102,7 +112,7 @@ function SurpriseButton() {
       aria-keyshortcuts={ariaKeyshortcuts("I")}
       onClick={wallpaper.surprise}
     >
-      <span className="material-symbols-rounded">casino</span>
+      <Casino />
     </Button>
   );
 }
@@ -127,7 +137,7 @@ function AddShapeButton({ mini }: { mini: boolean }) {
           : "h-12 w-full rounded-3xl hover:state-layer-8 active:rounded-[14px] active:state-layer-12",
       )}
     >
-      <span className="material-symbols-rounded">add</span>
+      <Add />
       {!mini && "Add shape"}
     </button>
   );

@@ -1,35 +1,30 @@
 import { FieldLabel } from "@/components/ui/field-label";
-import { Segmented } from "@/components/ui/segmented";
+import { Segmented, SegmentedProps } from "@/components/ui/segmented";
 import { useWallpaper, wallpaper } from "@/store/wallpaper";
+import { BrightnessSix, DarkMode, LightMode } from "material-symbols/rounded";
+import {
+  DarkMode as DarkModeFilled,
+  LightMode as LightModeFilled,
+} from "material-symbols/rounded/filled";
 
 const options = [
   {
     value: "light",
-    label: (
-      <>
-        <span className="material-symbols-rounded">light_mode</span>
-        Light
-      </>
-    ),
+    icon: (selected) => (selected ? <LightModeFilled /> : <LightMode />),
+    label: "Light",
   },
   {
     value: "dark",
-    label: (
-      <>
-        <span className="material-symbols-rounded">dark_mode</span>
-        Dark
-      </>
-    ),
+    icon: (selected) => (selected ? <DarkModeFilled /> : <DarkMode />),
+    label: "Dark",
   },
-] as const;
+] as const satisfies SegmentedProps<"light" | "dark">["options"];
 
 export function ThemeToggle() {
   const dark = useWallpaper((state) => state.dark);
   return (
     <div className="flex flex-col gap-2">
-      <FieldLabel icon={<span className="material-symbols-rounded">brightness_6</span>}>
-        Theme
-      </FieldLabel>
+      <FieldLabel icon={<BrightnessSix />}>Theme</FieldLabel>
       <Segmented
         label="Theme"
         value={dark ? "dark" : "light"}

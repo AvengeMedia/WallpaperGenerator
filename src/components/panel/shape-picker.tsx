@@ -6,6 +6,7 @@ import { ariaKeyshortcuts } from "@/lib/shortcut-keys";
 import { selectActive, useWallpaper, wallpaper, wallpaperStore } from "@/store/wallpaper";
 import { ui, useUi, type PickMode } from "@/store/ui";
 import { ShapeGrid } from "./shape-grid";
+import { ArrowBack } from "material-symbols/rounded";
 
 export const pickShape = (mode: PickMode, spec: ShapeSpec) => {
   if (mode === "replace" && wallpaperStore.state.activeId) wallpaper.replaceActiveShape(spec);
@@ -39,7 +40,7 @@ export function ShapePicker() {
           aria-keyshortcuts={ariaKeyshortcuts("Escape")}
           onClick={ui.closePicker}
         >
-          <span className="material-symbols-rounded">arrow_back</span>
+          <ArrowBack />
         </IconButton>
         <span className="text-base font-semibold whitespace-nowrap">
           {replacing ? "Change shape" : "Add shape"}
