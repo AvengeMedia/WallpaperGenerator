@@ -12,7 +12,8 @@ export type PatternId = (typeof PATTERNS)[number];
 
 export const DEFAULT_PATTERN: PatternId = "topography";
 
-export const isPatternId = (v: unknown): v is PatternId => PATTERNS.includes(v as PatternId);
+export const isPatternId = (value: unknown): value is PatternId =>
+  PATTERNS.includes(value as PatternId);
 
 export const patternUrl = (id: PatternId) => (id === "none" ? null : `/patterns/${id}.svg`);
 
@@ -26,20 +27,20 @@ const tileSizes = new Map<string, Promise<[number, number]>>();
 export const patternTileSize = (src: string): Promise<[number, number]> => {
   const cached = tileSizes.get(src);
   if (cached) return cached;
-  const p = new Promise<[number, number]>((resolve) => {
-    const im = new Image();
-    im.onload = () => resolve([im.naturalWidth || 100, im.naturalHeight || 100]);
-    im.onerror = () => resolve([100, 100]);
-    im.src = src;
+  const sizePromise = new Promise<[number, number]>((resolve) => {
+    const image = new Image();
+    image.onload = () => resolve([image.naturalWidth || 100, image.naturalHeight || 100]);
+    image.onerror = () => resolve([100, 100]);
+    image.src = src;
   });
-  tileSizes.set(src, p);
-  return p;
+  tileSizes.set(src, sizePromise);
+  return sizePromise;
 };
 
 export const loadImage = (src: string): Promise<HTMLImageElement | null> =>
   new Promise((resolve) => {
-    const im = new Image();
-    im.onload = () => resolve(im);
-    im.onerror = () => resolve(null);
-    im.src = src;
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => resolve(null);
+    image.src = src;
   });

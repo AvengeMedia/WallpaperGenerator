@@ -3,23 +3,25 @@ import { twMerge } from "tailwind-merge";
 
 export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));
 
-export const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+export const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
 
-export const decimals = (n: number) => {
-  const s = String(n);
-  if (s.includes("e-")) return parseInt(s.split("e-")[1], 10);
-  return s.split(".")[1]?.length ?? 0;
+export const decimals = (number: number) => {
+  const stringValue = String(number);
+  if (stringValue.includes("e-")) return parseInt(stringValue.split("e-")[1], 10);
+  return stringValue.split(".")[1]?.length ?? 0;
 };
 
-export const normDeg = (d: number) => ((d % 360) + 360) % 360;
+export const normDeg = (degree: number) => ((degree % 360) + 360) % 360;
 
-export const round = (v: number, digits = 3) => +v.toFixed(digits);
+export const round = (value: number, digits = 3) => +value.toFixed(digits);
 
-export const rnd = (a: number, b: number) => a + Math.random() * (b - a);
+export const rnd = (min: number, max: number) => min + Math.random() * (max - min);
 
 export const pickRandom = <T>(list: readonly T[]): T =>
   list[Math.floor(Math.random() * list.length)];
 
-export const camel = (s: string) => s.replace(/-(\w)/g, (_, c: string) => c.toUpperCase());
+export const camel = (str: string) =>
+  str.replace(/-(\w)/g, (_, char: string) => char.toUpperCase());
 
-export const lowerFirst = (s: string) => s[0].toLowerCase() + s.slice(1);
+export const lowerFirst = (str: string) => str[0].toLowerCase() + str.slice(1);

@@ -7,33 +7,37 @@ export const toOklch = ([R, G, B]: Rgb): [number, number, number] => {
   const r = lin(R);
   const g = lin(G);
   const b = lin(B);
-  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
-  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
-  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
-  const L = 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s;
-  const a = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s;
-  const k = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s;
-  return [L, Math.hypot(a, k), ((Math.atan2(k, a) * 180) / Math.PI + 360) % 360];
+  const lVal = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+  const mVal = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+  const sVal = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+  const lightness = 0.2104542553 * lVal + 0.793617785 * mVal - 0.0040720468 * sVal;
+  const aVal = 1.9779984951 * lVal - 2.428592205 * mVal + 0.4505937099 * sVal;
+  const kVal = 0.0259040371 * lVal + 0.7827717662 * mVal - 0.808675766 * sVal;
+  return [
+    lightness,
+    Math.hypot(aVal, kVal),
+    ((Math.atan2(kVal, aVal) * 180) / Math.PI + 360) % 360,
+  ];
 };
 
 export const fromOklch = (L: number, C: number, h: number): Rgb => {
-  const rgbAt = (c: number) => {
-    const a = c * Math.cos((h * Math.PI) / 180);
-    const k = c * Math.sin((h * Math.PI) / 180);
-    const l = (L + 0.3963377774 * a + 0.2158037573 * k) ** 3;
-    const m = (L - 0.1055613458 * a - 0.0638541728 * k) ** 3;
-    const s = (L - 0.0894841775 * a - 1.291485548 * k) ** 3;
+  const rgbAt = (chroma: number) => {
+    const aVal = chroma * Math.cos((h * Math.PI) / 180);
+    const kVal = chroma * Math.sin((h * Math.PI) / 180);
+    const lVal = (L + 0.3963377774 * aVal + 0.2158037573 * kVal) ** 3;
+    const mVal = (L - 0.1055613458 * aVal - 0.0638541728 * kVal) ** 3;
+    const sVal = (L - 0.0894841775 * aVal - 1.291485548 * kVal) ** 3;
     return [
-      4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
-      -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
-      -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
+      4.0767416621 * lVal - 3.3077115913 * mVal + 0.2309699292 * sVal,
+      -1.2684380046 * lVal + 2.6097574011 * mVal - 0.3413193965 * sVal,
+      -0.0041960863 * lVal - 0.7034186147 * mVal + 1.707614701 * sVal,
     ];
   };
-  let c = C;
-  let rgb = rgbAt(c);
+  let chroma = C;
+  let rgb = rgbAt(chroma);
   for (let i = 0; i < 40 && rgb.some((v) => v < -0.0005 || v > 1.0005); i++) {
-    c *= 0.95;
-    rgb = rgbAt(c);
+    chroma *= 0.95;
+    rgb = rgbAt(chroma);
   }
   return rgb.map((v) => Math.round(gam(Math.min(1, Math.max(0, v))))) as Rgb;
 };
@@ -44,14 +48,14 @@ export const hexToRgb = (text: string): Rgb | null => {
     .replace(/^#/, "")
     .match(/^([0-9a-f]{3}|[0-9a-f]{6})$/i);
   if (!m) return null;
-  let h = m[1];
-  if (h.length === 3) {
-    h = h
+  let hex = m[1];
+  if (hex.length === 3) {
+    hex = hex
       .split("")
-      .map((c) => c + c)
+      .map((char) => char + char)
       .join("");
   }
-  return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)) as Rgb;
+  return [0, 2, 4].map((index) => parseInt(hex.slice(index, index + 2), 16)) as Rgb;
 };
 
 export const rgbToHex = ([r, g, b]: Rgb) =>

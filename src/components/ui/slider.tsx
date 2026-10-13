@@ -14,9 +14,9 @@ interface SliderProps {
   className?: string;
   ticks?: boolean;
   disabled?: boolean;
-  onPointerDown?: (e: React.PointerEvent<HTMLElement>) => void;
-  onPointerUp?: (e: React.PointerEvent<HTMLElement>) => void;
-  onPointerCancel?: (e: React.PointerEvent<HTMLElement>) => void;
+  onPointerDown?: (event: React.PointerEvent<HTMLElement>) => void;
+  onPointerUp?: (event: React.PointerEvent<HTMLElement>) => void;
+  onPointerCancel?: (event: React.PointerEvent<HTMLElement>) => void;
 }
 
 const GAP = 6;
@@ -56,29 +56,29 @@ export function Slider({
   valueRef.current = value;
 
   useLayoutEffect(() => {
-    const el = wrap.current;
-    if (!el) return;
-    const measure = () => setWidth(el.getBoundingClientRect().width);
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
+    const element = wrap.current;
+    if (!element) return;
+    const measure = () => setWidth(element.getBoundingClientRect().width);
+    const resizeObserver = new ResizeObserver(measure);
+    resizeObserver.observe(element);
     measure();
-    return () => ro.disconnect();
+    return () => resizeObserver.disconnect();
   }, []);
 
-  const f = Math.min(1, Math.max(0, (value - min) / (max - min)));
-  const x = f * width;
-  const activeWidth = Math.max(0, x - GAP);
-  const inactiveLeft = Math.min(width, x + GAP);
+  const fraction = Math.min(1, Math.max(0, (value - min) / (max - min)));
+  const positionX = fraction * width;
+  const activeWidth = Math.max(0, positionX - GAP);
+  const inactiveLeft = Math.min(width, positionX + GAP);
 
   const count = Math.round((max - min) / step);
   const showTicks =
     ticks && count > 0 && Number.isFinite(count) && width / count >= MIN_TICK_SPACING;
 
   const tickMarks = showTicks
-    ? Array.from({ length: count + 1 }, (_, i) => {
-        const pos = clamp((i / count) * width, TICK, width - TICK);
-        return { pos, active: pos < x };
-      }).filter((t) => Math.abs(t.pos - x) >= GAP + TICK / 2)
+    ? Array.from({ length: count + 1 }, (_, index) => {
+        const tickPositionX = clamp((index / count) * width, TICK, width - TICK);
+        return { pos: tickPositionX, active: tickPositionX < positionX };
+      }).filter((tick) => Math.abs(tick.pos - positionX) >= GAP + TICK / 2)
     : [];
 
   const seek = useCallback(
@@ -94,12 +94,12 @@ export function Slider({
     [min, max, step, onChange],
   );
 
-  const endPress = (e: React.PointerEvent<HTMLElement>, cancelled = false) => {
-    if (e.currentTarget.hasPointerCapture(e.pointerId))
-      e.currentTarget.releasePointerCapture(e.pointerId);
+  const endPress = (event: React.PointerEvent<HTMLElement>, cancelled = false) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId))
+      event.currentTarget.releasePointerCapture(event.pointerId);
     setPressed(false);
-    onPointerUp?.(e);
-    if (cancelled) onPointerCancel?.(e);
+    onPointerUp?.(event);
+    if (cancelled) onPointerCancel?.(event);
   };
 
   useEffect(() => {
@@ -116,25 +116,25 @@ export function Slider({
     <div
       ref={wrap}
       aria-disabled={disabled || undefined}
-      onPointerDown={(e) => {
+      onPointerDown={(event) => {
         if (disabled) return;
         pointerFocus.current = true;
         setFocused(false);
-        e.preventDefault();
-        e.currentTarget.setPointerCapture(e.pointerId);
+        event.preventDefault();
+        event.currentTarget.setPointerCapture(event.pointerId);
         setPressed(true);
         input.current?.focus();
-        seek(e.clientX);
-        onPointerDown?.(e);
+        seek(event.clientX);
+        onPointerDown?.(event);
       }}
-      onPointerMove={(e) => {
-        if (pressed && !disabled) seek(e.clientX);
+      onPointerMove={(event) => {
+        if (pressed && !disabled) seek(event.clientX);
       }}
-      onPointerUp={(e) => {
-        if (!disabled) endPress(e);
+      onPointerUp={(event) => {
+        if (!disabled) endPress(event);
       }}
-      onPointerCancel={(e) => {
-        if (!disabled) endPress(e, true);
+      onPointerCancel={(event) => {
+        if (!disabled) endPress(event, true);
       }}
       onDoubleClick={disabled ? undefined : onReset}
       className={cn(
@@ -155,26 +155,26 @@ export function Slider({
         value={value}
         disabled={disabled}
         aria-label={label}
-        onChange={(e) => onChange(+e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Home") {
-            e.preventDefault();
+        onChange={(event) => onChange(+event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Home") {
+            event.preventDefault();
             onChange(min);
             return;
           }
-          if (e.key === "End") {
-            e.preventDefault();
+          if (event.key === "End") {
+            event.preventDefault();
             onChange(max);
             return;
           }
           const dir =
-            e.key === "ArrowLeft" || e.key === "ArrowDown"
+            event.key === "ArrowLeft" || event.key === "ArrowDown"
               ? -1
-              : e.key === "ArrowRight" || e.key === "ArrowUp"
+              : event.key === "ArrowRight" || event.key === "ArrowUp"
                 ? 1
                 : 0;
-          if (!e.shiftKey || !dir) return;
-          e.preventDefault();
+          if (!event.shiftKey || !dir) return;
+          event.preventDefault();
           onChange(clamp(+(value + dir * step * 10).toFixed(4), min, max));
         }}
         className="pointer-events-none absolute inset-0 m-0 h-full w-full appearance-none opacity-0"
@@ -196,14 +196,14 @@ export function Slider({
       />
       {showTicks && (
         <div aria-hidden className="pointer-events-none absolute top-2.5 left-0 h-5 w-full">
-          {tickMarks.map((t, i) => (
+          {tickMarks.map((tick, index) => (
             <span
-              key={i}
+              key={index}
               className={cn(
                 "absolute top-1/2 -mt-0.5 -ml-0.5 size-1 rounded-full opacity-80",
                 track
                   ? "bg-surface"
-                  : t.active
+                  : tick.active
                     ? disabled
                       ? "bg-inverse-on-surface"
                       : "bg-on-primary"
@@ -211,7 +211,7 @@ export function Slider({
                       ? "bg-on-surface"
                       : "bg-on-secondary-container",
               )}
-              style={{ left: t.pos }}
+              style={{ left: tick.pos }}
             />
           ))}
         </div>
@@ -224,7 +224,7 @@ export function Slider({
           (pressed || focused) && "-ml-px w-0.5",
           focused && "outline-2 outline-offset-1 outline-primary",
         )}
-        style={{ left: x }}
+        style={{ left: positionX }}
       />
     </div>
   );

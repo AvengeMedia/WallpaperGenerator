@@ -25,40 +25,44 @@ export const defaultPrefs = (): Prefs => ({
   patternScale: PATTERN_SCALE.default,
   format: "16:9",
   orientation: "landscape",
-  custom: { w: 1920, h: 1080 },
+  custom: { width: 1920, height: 1080 },
 });
 
 export const clampOpacity = (v: number) => clamp(v, PATTERN_OPACITY.min, PATTERN_OPACITY.max);
 export const clampScale = (v: number) => clamp(+v.toFixed(2), PATTERN_SCALE.min, PATTERN_SCALE.max);
 
-const migratePattern = (p: unknown): PatternId => {
-  if (p === "none") return "none";
-  if (typeof p !== "string") return DEFAULT_PATTERN;
-  const id = p.replace(/^.*\//, "").replace(/\.svg$/, "");
+const migratePattern = (pattern: unknown): PatternId => {
+  if (pattern === "none") return "none";
+  if (typeof pattern !== "string") return DEFAULT_PATTERN;
+  const id = pattern.replace(/^.*\//, "").replace(/\.svg$/, "");
   return isPatternId(id) ? id : DEFAULT_PATTERN;
 };
 
 export const sanitizePrefs = (raw: unknown): Prefs => {
   const prefs = defaultPrefs();
   if (!raw || typeof raw !== "object") return prefs;
-  const sp = raw as Record<string, unknown>;
-  prefs.pattern = migratePattern(sp.pattern);
-  if (typeof sp.opacity === "number" && Number.isFinite(sp.opacity))
-    prefs.opacity = clampOpacity(sp.opacity);
-  if (typeof sp.hue === "number" && Number.isFinite(sp.hue)) prefs.hue = normDeg(sp.hue);
-  if (typeof sp.patternScale === "number" && Number.isFinite(sp.patternScale))
-    prefs.patternScale = clampScale(sp.patternScale);
-  if (isFormatId(sp.format)) prefs.format = sp.format;
-  else if (sp.format === "9:16") {
+  const sanitizedPrefs = raw as Record<string, unknown>;
+  prefs.pattern = migratePattern(sanitizedPrefs.pattern);
+  if (typeof sanitizedPrefs.opacity === "number" && Number.isFinite(sanitizedPrefs.opacity))
+    prefs.opacity = clampOpacity(sanitizedPrefs.opacity);
+  if (typeof sanitizedPrefs.hue === "number" && Number.isFinite(sanitizedPrefs.hue))
+    prefs.hue = normDeg(sanitizedPrefs.hue);
+  if (
+    typeof sanitizedPrefs.patternScale === "number" &&
+    Number.isFinite(sanitizedPrefs.patternScale)
+  )
+    prefs.patternScale = clampScale(sanitizedPrefs.patternScale);
+  if (isFormatId(sanitizedPrefs.format)) prefs.format = sanitizedPrefs.format;
+  else if (sanitizedPrefs.format === "9:16") {
     prefs.format = "16:9";
     prefs.orientation = "portrait";
-  } else if (sp.format === "9:20") {
+  } else if (sanitizedPrefs.format === "9:20") {
     prefs.format = "custom";
-    prefs.custom = { w: 1080, h: 2400 };
+    prefs.custom = { width: 1080, height: 2400 };
   }
-  if (sp.orientation === "portrait") prefs.orientation = "portrait";
-  const custom = sp.custom as Partial<Size> | undefined;
-  if (custom && Number.isFinite(custom.w) && Number.isFinite(custom.h))
-    prefs.custom = { w: custom.w!, h: custom.h! };
+  if (sanitizedPrefs.orientation === "portrait") prefs.orientation = "portrait";
+  const custom = sanitizedPrefs.custom as Partial<Size> | undefined;
+  if (custom && Number.isFinite(custom.width) && Number.isFinite(custom.height))
+    prefs.custom = { width: custom.width!, height: custom.height! };
   return prefs;
 };

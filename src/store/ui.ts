@@ -98,7 +98,7 @@ function uiActions({
 
 export const ui = uiStore.actions;
 
-export const useUi = <T>(selector: (s: UiState) => T) =>
+export const useUi = <T>(selector: (state: UiState) => T) =>
   useSelector(uiStore, selector, { compare: shallow });
 
 let shownFor: string | null = null;

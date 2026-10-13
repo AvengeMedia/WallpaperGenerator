@@ -43,22 +43,23 @@ const assignRef = <T extends HTMLElement>(external: Ref<T> | null | undefined, n
 
 const spawnCircle = (
   host: HTMLElement,
-  ev: PointerEvent,
+  event: PointerEvent,
   duration: number,
   live: Set<() => void>,
 ) => {
-  if (ev.button !== 0 || host.matches(":disabled")) return;
+  if (event.button !== 0 || host.matches(":disabled")) return;
 
   const { left, top, width, height } = host.getBoundingClientRect();
-  const x = ev.clientX - left;
-  const y = ev.clientY - top;
-  const reach = 2 * Math.hypot(Math.max(x, width - x), Math.max(y, height - y));
+  const offsetX = event.clientX - left;
+  const offsetY = event.clientY - top;
+  const reach =
+    2 * Math.hypot(Math.max(offsetX, width - offsetX), Math.max(offsetY, height - offsetY));
 
   const circle = document.createElement("span");
   circle.className = CIRCLE;
   circle.setAttribute("aria-hidden", "true");
   circle.style.cssText =
-    `left:${x}px; top:${y}px; width:${reach}px; height:${reach}px; ` +
+    `left:${offsetX}px; top:${offsetY}px; width:${reach}px; height:${reach}px; ` +
     `--ripple-duration:${duration}ms`;
   host.appendChild(circle);
 
@@ -71,8 +72,8 @@ const spawnCircle = (
     circle.remove();
     live.delete(stop);
   };
-  const release = (up?: PointerEvent) => {
-    if (up && up.pointerId !== ev.pointerId) return;
+  const release = (releaseEvent?: PointerEvent) => {
+    if (releaseEvent && releaseEvent.pointerId !== event.pointerId) return;
     window.removeEventListener("pointerup", release);
     window.removeEventListener("pointercancel", release);
     clearTimeout(failSafe);
@@ -120,7 +121,7 @@ export function useRipple<T extends HTMLElement = HTMLButtonElement>({
 
       hosts.current.get(node)?.();
       applyHostClasses(node);
-      const spawn = (ev: PointerEvent) => spawnCircle(node, ev, duration, live.current);
+      const spawn = (event: PointerEvent) => spawnCircle(node, event, duration, live.current);
       node.addEventListener("pointerdown", spawn);
       const dispose = () => {
         node.removeEventListener("pointerdown", spawn);

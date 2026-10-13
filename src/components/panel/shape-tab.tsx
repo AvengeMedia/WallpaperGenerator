@@ -26,7 +26,10 @@ export const openShapes = (mode: "add" | "replace") =>
 export function ShapeTab() {
   const active = useWallpaper(selectActive);
   const index = useWallpaper(selectActiveIndex);
-  const { count, canvas } = useWallpaper((s) => ({ count: s.layers.length, canvas: s.canvas }));
+  const { count, canvas } = useWallpaper((state) => ({
+    count: state.layers.length,
+    canvas: state.canvas,
+  }));
 
   if (!active) {
     return (
@@ -44,8 +47,8 @@ export function ShapeTab() {
 
   const activeIsBlob = isBlob(active);
   const opacity = Math.round((active.opacity ?? 1) * 100);
-  const rot = Math.round(normDeg(active.rot)) % 360;
-  const size = Math.round((active.size / Math.min(canvas.w, canvas.h)) * 100);
+  const rotation = Math.round(normDeg(active.rot)) % 360;
+  const size = Math.round((active.size / Math.min(canvas.width, canvas.height)) * 100);
 
   return (
     <section
@@ -116,7 +119,9 @@ export function ShapeTab() {
               step={1}
               ticks
               value={active.points.length}
-              onChange={(v) => wallpaper.patchActive({ ...createBlob(v, active.smoothness) })}
+              onChange={(value) =>
+                wallpaper.patchActive({ ...createBlob(value, active.smoothness) })
+              }
               onReset={() => wallpaper.patchActive({ ...randomBlob() })}
             />
           </div>
@@ -135,8 +140,10 @@ export function ShapeTab() {
               step={1}
               ticks
               value={active.smoothness}
-              onChange={(v) =>
-                wallpaper.patchActive({ ...createBlob(active.points.length, v as SmoothnessIndex) })
+              onChange={(value) =>
+                wallpaper.patchActive({
+                  ...createBlob(active.points.length, value as SmoothnessIndex),
+                })
               }
               onReset={() => wallpaper.patchActive({ ...randomBlob() })}
             />
@@ -156,8 +163,8 @@ export function ShapeTab() {
           onChange={wallpaper.setActiveFill}
           className="flex flex-wrap gap-2"
         >
-          {PALETTE.map((c) => (
-            <Swatch key={c} color={c} />
+          {PALETTE.map((color) => (
+            <Swatch key={color} color={color} />
           ))}
         </RadioGroup>
       </div>
@@ -184,8 +191,8 @@ export function ShapeTab() {
             >
               <span className="material-symbols-rounded">block</span>
             </RadioItem>
-            {PALETTE.map((c) => (
-              <Swatch key={c} color={c} />
+            {PALETTE.map((color) => (
+              <Swatch key={color} color={color} />
             ))}
           </RadioGroup>
         </div>
@@ -206,7 +213,9 @@ export function ShapeTab() {
           max={LAYER_SIZE_PCT.max}
           step={1}
           value={size}
-          onChange={(v) => wallpaper.resizeActive((v / 100) * Math.min(canvas.w, canvas.h))}
+          onChange={(value) =>
+            wallpaper.resizeActive((value / 100) * Math.min(canvas.width, canvas.height))
+          }
         />
       </div>
 
@@ -225,7 +234,9 @@ export function ShapeTab() {
           max={100}
           step={1}
           value={opacity}
-          onChange={(v) => wallpaper.patchActive({ opacity: v >= 100 ? undefined : v / 100 })}
+          onChange={(value) =>
+            wallpaper.patchActive({ opacity: value >= 100 ? undefined : value / 100 })
+          }
           onReset={() => wallpaper.patchActive({ opacity: undefined })}
         />
       </div>
@@ -233,19 +244,19 @@ export function ShapeTab() {
       <div className="flex flex-col gap-2">
         <FieldLabel
           icon={<span className="material-symbols-rounded">rotate_right</span>}
-          htmlFor="sm-rot"
-          value={`${rot}°`}
+          htmlFor="sm-rotation"
+          value={`${rotation}°`}
           title="Rotation: , and . or Q and E (Shift snaps to 15°)"
         >
           Rotation
         </FieldLabel>
         <Slider
-          id="sm-rot"
+          id="sm-rotation"
           min={0}
           max={359}
           step={1}
-          value={rot}
-          onChange={(v) => wallpaper.patchActive({ rot: v })}
+          value={rotation}
+          onChange={(value) => wallpaper.patchActive({ rot: value })}
           onReset={() => wallpaper.patchActive({ rot: 0 })}
         />
       </div>

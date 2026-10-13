@@ -23,12 +23,12 @@ export const loadSaved = (): SavedState | null => {
     const prefs = sanitizePrefs(saved.prefs);
     const canvas = canvasSize(prefs.format, prefs.orientation, prefs.custom);
     const layers = (saved.layers as unknown[])
-      .map((l) =>
-        l && typeof l === "object"
-          ? sanitizeLayer(migrateLegacyColors(l as Record<string, unknown>), canvas)
+      .map((layer) =>
+        layer && typeof layer === "object"
+          ? sanitizeLayer(migrateLegacyColors(layer as Record<string, unknown>), canvas)
           : null,
       )
-      .filter((l): l is Layer => l !== null);
+      .filter((layer): layer is Layer => layer !== null);
     return { layers, prefs, dark: saved.dark !== false };
   } catch {
     return null;

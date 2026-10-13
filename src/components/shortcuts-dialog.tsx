@@ -112,7 +112,7 @@ const groups = ({ move, rotate }: Labels): { title: string; rows: Row[] }[] => [
 ];
 
 export function ShortcutsDialog() {
-  const open = useUi((s) => s.shortcutsOpen);
+  const open = useUi((state) => state.shortcutsOpen);
   const ref = useRef<HTMLDialogElement>(null);
   const [labels, setLabels] = useState<Labels>({ move: "W A S D", rotate: "Q E" });
 
@@ -145,7 +145,7 @@ export function ShortcutsDialog() {
       ref={ref}
       aria-labelledby="shortcuts-title"
       onClose={() => ui.setShortcutsOpen(false)}
-      onClick={(e) => e.target === e.currentTarget && ui.setShortcutsOpen(false)}
+      onClick={(event) => event.target === event.currentTarget && ui.setShortcutsOpen(false)}
       className="fixed inset-0 m-auto max-h-[min(82vh,760px)] w-[min(640px,92vw)] overflow-hidden rounded-[28px] border-0 bg-surface-container-high p-0 text-sm text-on-surface open:flex open:animate-dialog-in open:flex-col"
     >
       <div className="flex items-center gap-3 py-4 pr-3 pb-2 pl-6">
@@ -164,25 +164,25 @@ export function ShortcutsDialog() {
         tabIndex={-1}
         className="grid grid-cols-2 gap-x-9 gap-y-6 overflow-y-auto px-6 pt-2 pb-6 max-sm:grid-cols-1"
       >
-        {groups(labels).map((g) => (
-          <section key={g.title}>
+        {groups(labels).map((group) => (
+          <section key={group.title}>
             <h3 className="mb-1.5 text-xs font-semibold tracking-[.06em] text-primary uppercase">
-              {g.title}
+              {group.title}
             </h3>
-            {g.rows.map((r, i) => (
-              <div key={i} className="flex items-center justify-between gap-3 py-[7px]">
+            {group.rows.map((row, rowIndex) => (
+              <div key={rowIndex} className="flex items-center justify-between gap-3 py-[7px]">
                 <span className="leading-[1.35]">
-                  {r.label}
-                  {r.hint && (
+                  {row.label}
+                  {row.hint && (
                     <>
                       <br />
-                      <small className="text-xs text-on-surface-variant">{r.hint}</small>
+                      <small className="text-xs text-on-surface-variant">{row.hint}</small>
                     </>
                   )}
                 </span>
                 <span className="flex shrink-0 gap-1">
-                  {r.keys.map((k, j) => (
-                    <Kbd key={j}>{k}</Kbd>
+                  {row.keys.map((key, keyIndex) => (
+                    <Kbd key={keyIndex}>{key}</Kbd>
                   ))}
                 </span>
               </div>

@@ -8,7 +8,7 @@ export const usePatternTile = (pattern: PatternId): [number, number] | null => {
   useEffect(() => {
     if (!src) return;
     let alive = true;
-    void patternTileSize(src).then((s) => alive && setSize(s));
+    void patternTileSize(src).then((size) => alive && setSize(size));
     return () => {
       alive = false;
     };

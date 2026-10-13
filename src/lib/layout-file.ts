@@ -27,26 +27,26 @@ export const serializeLayout = (
   pattern: PatternId,
   strength: number,
 ) => {
-  const m = Math.min(canvas.w, canvas.h);
-  const rows = layers.map((l, i) => {
-    const o: Record<string, unknown> = {};
-    if (isBlob(l)) {
-      o.shape = "blob";
-      o.path = l.d;
-      o.points = l.points.map((p) => ({ x: round(p.x, 4), y: round(p.y, 4) }));
-      o.smoothness = l.smoothness;
+  const minDimension = Math.min(canvas.width, canvas.height);
+  const rows = layers.map((layer, index) => {
+    const object: Record<string, unknown> = {};
+    if (isBlob(layer)) {
+      object.shape = "blob";
+      object.path = layer.path;
+      object.points = layer.points.map((point) => ({ x: round(point.x, 4), y: round(point.y, 4) }));
+      object.smoothness = layer.smoothness;
     } else {
-      o.shape = lowerFirst(SHAPES[l.shape ?? 0].name);
+      object.shape = lowerFirst(SHAPES[layer.shape ?? 0].name);
     }
-    o.x = round((l.x + l.size / 2) / canvas.w);
-    o.y = round((l.y + l.size / 2) / canvas.h);
-    o.size = round(l.size / m);
-    const rot = normDeg(l.rot);
-    o.rotation = round(rot > 180 ? rot - 360 : rot, 1);
-    o.fill = camel(l.fill);
-    if (i > 0 && l.overlap !== "none") o.overlap = camel(l.overlap);
-    if (l.opacity !== undefined) o.opacity = round(l.opacity, 2);
-    return "    " + JSON.stringify(o);
+    object.x = round((layer.x + layer.size / 2) / canvas.width);
+    object.y = round((layer.y + layer.size / 2) / canvas.height);
+    object.size = round(layer.size / minDimension);
+    const rotationValue = normDeg(layer.rot);
+    object.rotation = round(rotationValue > 180 ? rotationValue - 360 : rotationValue, 1);
+    object.fill = camel(layer.fill);
+    if (index > 0 && layer.overlap !== "none") object.overlap = camel(layer.overlap);
+    if (layer.opacity !== undefined) object.opacity = round(layer.opacity, 2);
+    return "    " + JSON.stringify(object);
   });
   const layersText = rows.length ? `[\n${rows.join(",\n")}\n  ]` : "[]";
   return `{\n  "layers": ${layersText},\n  "pattern": ${JSON.stringify(pattern)},\n  "strength": ${round(strength, 2)}\n}\n`;
@@ -54,21 +54,21 @@ export const serializeLayout = (
 
 export type ParseResult = { ok: true; layout: LayoutFile } | { ok: false; error: string };
 
-const isSmoothness = (v: unknown): v is SmoothnessIndex =>
-  Number.isInteger(v) && (v as number) >= 0 && (v as number) < SMOOTHNESS.length;
+const isSmoothness = (value: unknown): value is SmoothnessIndex =>
+  Number.isInteger(value) && (value as number) >= 0 && (value as number) < SMOOTHNESS.length;
 
-const isPoints = (v: unknown): v is { x: number; y: number }[] =>
-  Array.isArray(v) &&
-  v.length >= BLOB_MIN_EDGES &&
-  v.length <= BLOB_MAX_EDGES &&
-  v.every((p) => p && Number.isFinite(p.x) && Number.isFinite(p.y));
+const isPoints = (value: unknown): value is { x: number; y: number }[] =>
+  Array.isArray(value) &&
+  value.length >= BLOB_MIN_EDGES &&
+  value.length <= BLOB_MAX_EDGES &&
+  value.every((position) => position && Number.isFinite(position.x) && Number.isFinite(position.y));
 
-const blobFields = (r: Record<string, unknown>) => {
-  const smoothness = isSmoothness(r.smoothness) ? r.smoothness : 0;
-  if (isPoints(r.points)) {
-    return { points: r.points, smoothness, d: createBlobPath(r.points, smoothness) };
+const blobFields = (record: Record<string, unknown>) => {
+  const smoothness = isSmoothness(record.smoothness) ? record.smoothness : 0;
+  if (isPoints(record.points)) {
+    return { points: record.points, smoothness, d: createBlobPath(record.points, smoothness) };
   }
-  return { d: r.path };
+  return { d: record.path };
 };
 
 export const parseLayout = (text: string, canvas: Size): ParseResult => {
@@ -82,24 +82,25 @@ export const parseLayout = (text: string, canvas: Size): ParseResult => {
     return { ok: false, error: "No layout found in that file." };
   }
   const file = data as { layers: unknown[]; pattern?: unknown; strength?: unknown };
-  const m = Math.min(canvas.w, canvas.h);
+  const minDimension = Math.min(canvas.width, canvas.height);
   const layers: Layer[] = [];
-  for (const raw of file.layers) {
-    if (!raw || typeof raw !== "object") continue;
-    const r = raw as Record<string, unknown>;
-    const size = Number(r.size) * m;
+  for (const rawLayer of file.layers) {
+    if (!rawLayer || typeof rawLayer !== "object") continue;
+    const raw = rawLayer as Record<string, unknown>;
+    const size = Number(raw.size) * minDimension;
     const candidate: Record<string, unknown> = {
       id: newLayerId(),
       size,
-      x: Number(r.x) * canvas.w - size / 2,
-      y: Number(r.y) * canvas.h - size / 2,
-      rot: normDeg(Number(r.rotation) || 0),
-      fill: PALETTE.find((c) => camel(c) === r.fill),
-      overlap: OVERLAP_OPTIONS.find((c) => camel(c) === r.overlap) ?? ("none" as OverlapColor),
+      x: Number(raw.x) * canvas.width - size / 2,
+      y: Number(raw.y) * canvas.height - size / 2,
+      rot: normDeg(Number(raw.rotation) || 0),
+      fill: PALETTE.find((color) => camel(color) === raw.fill),
+      overlap:
+        OVERLAP_OPTIONS.find((color) => camel(color) === raw.overlap) ?? ("none" as OverlapColor),
     };
-    if (r.shape === "blob") Object.assign(candidate, blobFields(r));
-    else candidate.shape = SHAPES.findIndex((sh) => lowerFirst(sh.name) === r.shape);
-    if (r.opacity !== undefined) candidate.opacity = r.opacity;
+    if (raw.shape === "blob") Object.assign(candidate, blobFields(raw));
+    else candidate.shape = SHAPES.findIndex((shape) => lowerFirst(shape.name) === raw.shape);
+    if (raw.opacity !== undefined) candidate.opacity = raw.opacity;
     if (!isPaletteColor(candidate.fill)) continue;
     const layer = sanitizeLayer(candidate, canvas);
     if (layer) layers.push(layer);
@@ -123,9 +124,9 @@ export const installLink = (text: string) => {
 };
 
 export const downloadBlob = (blob: Blob, filename: string) => {
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(link.href), 5000);
 };

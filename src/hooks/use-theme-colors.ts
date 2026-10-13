@@ -4,7 +4,7 @@ import { hueGradient, shiftedTokens, TOKENS, tokenCssVar } from "@/lib/theme";
 import { useWallpaper } from "@/store/wallpaper";
 
 export const useThemeColors = () => {
-  const { dark, hue } = useWallpaper((s) => ({ dark: s.dark, hue: s.prefs.hue }));
+  const { dark, hue } = useWallpaper((state) => ({ dark: state.dark, hue: state.prefs.hue }));
   const tokens = useMemo(() => shiftedTokens(dark, hue), [dark, hue]);
 
   useEffect(() => {

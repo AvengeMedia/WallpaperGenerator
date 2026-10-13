@@ -23,9 +23,9 @@ export function Button({ variant = "tonal", className, onClick, ref, ...rest }: 
     <button
       type="button"
       ref={ripple}
-      onClick={(e) => {
-        e.currentTarget.blur();
-        onClick?.(e);
+      onClick={(event) => {
+        event.currentTarget.blur();
+        onClick?.(event);
       }}
       className={cn(
         "inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-[20px] border-0 px-2.5 py-3 text-[13px] leading-none font-medium focus-ring morph active:rounded-xl [&_svg]:size-5 [&_svg]:shrink-0",

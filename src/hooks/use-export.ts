@@ -17,7 +17,7 @@ export const useExport = () => {
       patternScale: prefs.patternScale,
       scale,
     };
-    const name = `wallpaper-${canvas.w * scale}x${canvas.h * scale}.png`;
+    const name = `wallpaper-${canvas.width * scale}x${canvas.height * scale}.png`;
     try {
       let withPattern = true;
       let blob: Blob;

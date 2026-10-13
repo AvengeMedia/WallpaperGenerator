@@ -1,7 +1,7 @@
 import { useUi } from "@/store/ui";
 
 export function Toast() {
-  const toast = useUi((s) => s.toast);
+  const toast = useUi((state) => state.toast);
   if (!toast) return null;
   return (
     <div

@@ -13,7 +13,7 @@ interface HuePickerProps {
 }
 
 export function HuePicker({ track, placeholder }: HuePickerProps) {
-  const hue = useWallpaper((s) => s.prefs.hue);
+  const hue = useWallpaper((state) => state.prefs.hue);
   const [hex, setHex] = useState("");
 
   const applyHex = (text: string) => {
@@ -22,19 +22,19 @@ export function HuePicker({ track, placeholder }: HuePickerProps) {
       if (text.trim()) ui.showToast("Use a hex like #4c662b", 2000);
       return;
     }
-    const [, chroma, h] = toOklch(rgb);
+    const [, chroma, hue] = toOklch(rgb);
     if (chroma < 0.01) {
       ui.showToast("That color is gray, so it has no hue.", 2000);
       return;
     }
-    wallpaper.setHue(h - BASE_HUE);
+    wallpaper.setHue(hue - BASE_HUE);
   };
 
   const onSliderDragStart = () => document.documentElement.classList.add("no-transitions");
   const onSliderDragEnd = () => document.documentElement.classList.remove("no-transitions");
-  const onHueChange = (v: number) => {
+  const onHueChange = (value: number) => {
     setHex("");
-    wallpaper.setHue(v - BASE_HUE);
+    wallpaper.setHue(value - BASE_HUE);
   };
 
   return (
@@ -66,12 +66,14 @@ export function HuePicker({ track, placeholder }: HuePickerProps) {
         autoComplete="off"
         title="Type a hex color to use its hue"
         value={hex}
-        onChange={(e) => {
-          setHex(e.target.value);
-          if (/^#?[0-9a-f]{6}$/i.test(e.target.value.trim())) applyHex(e.target.value);
+        onChange={(event) => {
+          setHex(event.target.value);
+          if (/^#?[0-9a-f]{6}$/i.test(event.target.value.trim())) applyHex(event.target.value);
         }}
-        onBlur={(e) => applyHex(e.target.value)}
-        onKeyDown={(e) => (e.key === "Enter" || e.key === "Escape") && e.currentTarget.blur()}
+        onBlur={(event) => applyHex(event.target.value)}
+        onKeyDown={(event) =>
+          (event.key === "Enter" || event.key === "Escape") && event.currentTarget.blur()
+        }
         className="w-full rounded-2xl border border-on-surface/38 bg-transparent px-4 py-2.5 font-[inherit] text-on-surface transition-[border-color,box-shadow] duration-200 placeholder:text-on-surface/60 hover:border-on-surface focus:border-primary focus:shadow-[0_0_0_1px_var(--color-primary)] focus:outline-none"
       />
     </div>

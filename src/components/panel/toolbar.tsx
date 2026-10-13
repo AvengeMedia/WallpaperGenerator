@@ -7,8 +7,11 @@ import { ui, useUi } from "@/store/ui";
 import { ExportMenu } from "./export-menu";
 
 export function Toolbar() {
-  const { canUndo, canRedo } = useWallpaper((s) => ({ canUndo: s.canUndo, canRedo: s.canRedo }));
-  const panel = useUi((s) => s.panel);
+  const { canUndo, canRedo } = useWallpaper((state) => ({
+    canUndo: state.canUndo,
+    canRedo: state.canRedo,
+  }));
+  const panel = useUi((state) => state.panel);
   const fileInput = useRef<HTMLInputElement>(null);
   const onFilePicked = useDropImport();
 
@@ -69,7 +72,7 @@ export function Toolbar() {
         type="file"
         accept=".json,application/json"
         hidden
-        onChange={(e) => onFilePicked(e.currentTarget)}
+        onChange={(event) => onFilePicked(event.currentTarget)}
       />
     </div>
   );

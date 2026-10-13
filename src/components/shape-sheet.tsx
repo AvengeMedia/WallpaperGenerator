@@ -7,7 +7,7 @@ import { ui, useUi } from "@/store/ui";
 import { wallpaperStore } from "@/store/wallpaper";
 
 export function ShapeSheet() {
-  const mode = useUi((s) => s.sheet);
+  const mode = useUi((state) => state.sheet);
   const open = mode !== null;
   const sheet = useRef<HTMLDivElement>(null);
   useFocusReturn(open);
@@ -21,7 +21,7 @@ export function ShapeSheet() {
   return (
     <div
       aria-hidden={!open}
-      onClick={(e) => e.target === e.currentTarget && ui.closeSheet()}
+      onClick={(event) => event.target === event.currentTarget && ui.closeSheet()}
       className={cn(
         "fixed inset-0 z-20 bg-black/60 transition-opacity duration-300 ease-[cubic-bezier(0.3,0,0,1)]",
         open ? "opacity-100" : "pointer-events-none opacity-0",
@@ -53,8 +53,9 @@ export function ShapeSheet() {
             className="grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-4 p-2"
             currentShape={
               replacing
-                ? (wallpaperStore.state.layers.find((l) => l.id === wallpaperStore.state.activeId)
-                    ?.shape ?? undefined)
+                ? (wallpaperStore.state.layers.find(
+                    (layer) => layer.id === wallpaperStore.state.activeId,
+                  )?.shape ?? undefined)
                 : undefined
             }
             onPick={(spec, shift) => {

@@ -31,19 +31,22 @@ const keyDelta: Record<string, number> = {
   ArrowUp: -1,
 };
 
-const moveFocus = (e: KeyboardEvent<HTMLDivElement>) => {
-  const items = [...e.currentTarget.querySelectorAll<HTMLButtonElement>('[role="radio"]')];
-  const i = items.indexOf((e.target as HTMLElement).closest('[role="radio"]') as HTMLButtonElement);
-  if (i < 0) return;
-  let n: number | undefined;
-  if (e.key in keyDelta) n = (i + keyDelta[e.key] + items.length) % items.length;
-  else if (e.key === "Home") n = 0;
-  else if (e.key === "End") n = items.length - 1;
-  if (n === undefined) return;
-  e.preventDefault();
-  e.stopPropagation();
-  items[n].focus();
-  items[n].click();
+const moveFocus = (event: KeyboardEvent<HTMLDivElement>) => {
+  const items = [...event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="radio"]')];
+  const focusedIndex = items.indexOf(
+    (event.target as HTMLElement).closest('[role="radio"]') as HTMLButtonElement,
+  );
+  if (focusedIndex < 0) return;
+  let nextIndex: number | undefined;
+  if (event.key in keyDelta)
+    nextIndex = (focusedIndex + keyDelta[event.key] + items.length) % items.length;
+  else if (event.key === "Home") nextIndex = 0;
+  else if (event.key === "End") nextIndex = items.length - 1;
+  if (nextIndex === undefined) return;
+  event.preventDefault();
+  event.stopPropagation();
+  items[nextIndex].focus();
+  items[nextIndex].click();
 };
 
 export function RadioGroup<T extends string>({
@@ -54,7 +57,7 @@ export function RadioGroup<T extends string>({
   ...rest
 }: RadioGroupProps<T>) {
   return (
-    <RadioContext.Provider value={{ value, onChange: onChange as (v: string) => void }}>
+    <RadioContext.Provider value={{ value, onChange: onChange as (value: string) => void }}>
       <div role="radiogroup" aria-label={label} onKeyDown={moveFocus} {...rest}>
         {children}
       </div>
@@ -79,9 +82,9 @@ export function RadioItem({ value, className, onClick, ...rest }: RadioItemProps
       aria-checked={checked}
       tabIndex={checked ? 0 : -1}
       data-checked={checked || undefined}
-      onClick={(e) => {
+      onClick={(event) => {
         ctx.onChange(value);
-        onClick?.(e);
+        onClick?.(event);
       }}
       className={cn("cursor-pointer", className)}
       {...rest}

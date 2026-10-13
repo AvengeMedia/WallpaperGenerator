@@ -47,24 +47,24 @@ export const baseTokens = (dark: boolean): TokenMap => (dark ? DARK : LIGHT);
 
 export const shiftedTokens = (dark: boolean, hue: number): TokenMap => {
   const base = baseTokens(dark);
-  const H = BASE_HUE + hue;
-  const out = {} as TokenMap;
+  const baseHue = BASE_HUE + hue;
+  const tokenMap = {} as TokenMap;
   for (const name of TOKENS) {
-    const [L, C] = toOklch(base[name]);
-    const h = (H + (name.startsWith("tertiary") ? TERTIARY_SHIFT : 0)) % 360;
-    out[name] = fromOklch(L, C, h);
+    const [lightness, chroma] = toOklch(base[name]);
+    const hueValue = (baseHue + (name.startsWith("tertiary") ? TERTIARY_SHIFT : 0)) % 360;
+    tokenMap[name] = fromOklch(lightness, chroma, hueValue);
   }
-  return out;
+  return tokenMap;
 };
 
 export const tokenCssVar = (name: Token | "black") => `--md-sys-color-${name}`;
 
 export const hueGradient = (dark: boolean) => {
-  const [L, C] = toOklch(baseTokens(dark).primary);
+  const [lightness, chroma] = toOklch(baseTokens(dark).primary);
   const stops: string[] = [];
   for (let i = 0; i <= 36; i++) {
-    const h = i * 10;
-    stops.push(`${rgbCss(fromOklch(L, C, h))} ${(h / 3.6).toFixed(2)}%`);
+    const hueValue = i * 10;
+    stops.push(`${rgbCss(fromOklch(lightness, chroma, hueValue))} ${(hueValue / 3.6).toFixed(2)}%`);
   }
   return `linear-gradient(90deg, ${stops.join(", ")})`;
 };

@@ -24,7 +24,7 @@ const options = [
 ] as const;
 
 export function ThemeToggle() {
-  const dark = useWallpaper((s) => s.dark);
+  const dark = useWallpaper((state) => state.dark);
   return (
     <div className="flex flex-col gap-2">
       <FieldLabel icon={<span className="material-symbols-rounded">brightness_6</span>}>
@@ -34,7 +34,7 @@ export function ThemeToggle() {
         label="Theme"
         value={dark ? "dark" : "light"}
         options={options}
-        onChange={(v) => wallpaper.setDark(v === "dark")}
+        onChange={(value) => wallpaper.setDark(value === "dark")}
       />
     </div>
   );

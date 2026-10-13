@@ -23,38 +23,44 @@ import { ui, useUi } from "@/store/ui";
 
 const hasActive = () => wallpaperStore.state.activeId !== null;
 
-const step = (e: KeyboardEvent) => (e.shiftKey ? 10 : 1);
+const step = (event: KeyboardEvent) => (event.shiftKey ? 10 : 1);
 
-const moveBy = (dx: number, dy: number, e: KeyboardEvent) => {
+const moveBy = (deltaX: number, deltaY: number, event: KeyboardEvent) => {
   if (!hasActive()) return;
-  const s = step(e);
-  wallpaper.moveActiveBy(dx * s, dy * s);
+  const stepAmount = step(event);
+  wallpaper.moveActiveBy(deltaX * stepAmount, deltaY * stepAmount);
   sayActive();
 };
 
-const snap15 = (rot: number, dir: number) =>
-  normDeg(dir > 0 ? Math.ceil((rot + 0.01) / 15) * 15 : Math.floor((rot - 0.01) / 15) * 15);
+const snap15 = (rotation: number, direction: number) =>
+  normDeg(
+    direction > 0
+      ? Math.ceil((rotation + 0.01) / 15) * 15
+      : Math.floor((rotation - 0.01) / 15) * 15,
+  );
 
-const rotateBy = (dir: number, e: KeyboardEvent) => {
+const rotateBy = (direction: number, event: KeyboardEvent) => {
   const active = selectActive(wallpaperStore.state);
   if (!active) return;
   const cur = normDeg(active.rot);
-  wallpaper.patchActive({ rot: e.shiftKey ? snap15(cur, dir) : normDeg(cur + dir) });
+  wallpaper.patchActive({
+    rot: event.shiftKey ? snap15(cur, direction) : normDeg(cur + direction),
+  });
   sayActive();
 };
 
-const resizeBy = (dir: number, e: KeyboardEvent) => {
+const resizeBy = (direction: number, event: KeyboardEvent) => {
   const active = selectActive(wallpaperStore.state);
   if (!active) return;
-  wallpaper.resizeActive(active.size + dir * step(e));
+  wallpaper.resizeActive(active.size + direction * step(event));
   sayActive();
 };
 
-const opacityBy = (dir: number, e: KeyboardEvent) => {
+const opacityBy = (direction: number, event: KeyboardEvent) => {
   const active = selectActive(wallpaperStore.state);
   if (!active) return;
   const next = clamp(
-    Math.round(((active.opacity ?? 1) + dir * (e.shiftKey ? 0.1 : 0.01)) * 100),
+    Math.round(((active.opacity ?? 1) + direction * (event.shiftKey ? 0.1 : 0.01)) * 100),
     10,
     100,
   );
@@ -62,9 +68,9 @@ const opacityBy = (dir: number, e: KeyboardEvent) => {
   sayActive();
 };
 
-const reorder = (dir: number) => {
+const reorder = (direction: number) => {
   const before = selectActiveIndex(wallpaperStore.state);
-  wallpaper.reorderActive(dir);
+  wallpaper.reorderActive(direction);
   sayLayerPosition(before);
 };
 
@@ -74,15 +80,15 @@ const deleteActive = () => {
   say("Shape deleted", 150);
 };
 
-const stepZone = (dir: 1 | -1, e: KeyboardEvent) => {
+const stepZone = (direction: 1 | -1, event: KeyboardEvent) => {
   const { layers, activeId } = wallpaperStore.state;
-  const i = layers.findIndex((l) => l.id === activeId);
-  const next = i < 0 ? (dir > 0 ? 0 : layers.length - 1) : i + dir;
+  const activeIndex = layers.findIndex((layer) => layer.id === activeId);
+  const next = activeIndex < 0 ? (direction > 0 ? 0 : layers.length - 1) : activeIndex + direction;
   if (next < 0 || next >= layers.length) {
-    if (focusSidebar(dir > 0 ? "start" : "end")) e.preventDefault();
+    if (focusSidebar(direction > 0 ? "start" : "end")) event.preventDefault();
     return;
   }
-  e.preventDefault();
+  event.preventDefault();
   wallpaper.select(layers[next].id);
   say(describeShape(layers[next]), 120);
 };
@@ -104,20 +110,22 @@ const leaveCanvas = (bgMode: boolean) => {
   focusSidebar("start");
 };
 
-const setPatternStrength = (dir: number, e: KeyboardEvent) => {
-  wallpaper.setPatternOpacity(wallpaperStore.state.prefs.opacity + dir * (e.shiftKey ? 0.1 : 0.01));
+const setPatternStrength = (direction: number, event: KeyboardEvent) => {
+  wallpaper.setPatternOpacity(
+    wallpaperStore.state.prefs.opacity + direction * (event.shiftKey ? 0.1 : 0.01),
+  );
   say(`Pattern strength ${Math.round(wallpaperStore.state.prefs.opacity * 100)}%`);
 };
 
-const setPatternSize = (dir: number, e: KeyboardEvent) => {
+const setPatternSize = (direction: number, event: KeyboardEvent) => {
   wallpaper.setPatternScale(
-    wallpaperStore.state.prefs.patternScale + dir * (e.shiftKey ? 0.5 : 0.1),
+    wallpaperStore.state.prefs.patternScale + direction * (event.shiftKey ? 0.5 : 0.1),
   );
   say(`Pattern size ${round(wallpaperStore.state.prefs.patternScale, 1)}`);
 };
 
-const cyclePattern = (dir: 1 | -1) => {
-  wallpaper.cyclePattern(dir);
+const cyclePattern = (direction: 1 | -1) => {
+  wallpaper.cyclePattern(direction);
   say(`Pattern: ${patternLabel(wallpaperStore.state.prefs.pattern)}`, 250);
 };
 
@@ -148,25 +156,27 @@ const bind = (
 };
 
 // only active when pressed without modifier
-const plain = (run: (e: KeyboardEvent) => void) => (e: KeyboardEvent) => {
-  if (!e.altKey && !e.ctrlKey && !e.metaKey) run(e);
+const plain = (run: (event: KeyboardEvent) => void) => (event: KeyboardEvent) => {
+  if (!event.altKey && !event.ctrlKey && !event.metaKey) run(event);
 };
 
 // some commands should not fire again on holding them
-const once = (run: () => void) => (e: KeyboardEvent) => {
-  if (!e.repeat) run();
+const once = (run: () => void) => (event: KeyboardEvent) => {
+  if (!event.repeat) run();
 };
 
 export const useShortcuts = () => {
-  const { picking, sheetOpen, dialogOpen, exportMenuOpen, bgMode, canvasFocused } = useUi((s) => ({
-    picking: s.picker !== null,
-    sheetOpen: s.sheet !== null,
-    dialogOpen: s.shortcutsOpen,
-    exportMenuOpen: s.exportMenuOpen,
-    bgMode: s.bgMode,
-    canvasFocused: s.canvasFocused,
-  }));
-  const active = useWallpaper((s) => s.activeId !== null);
+  const { picking, sheetOpen, dialogOpen, exportMenuOpen, bgMode, canvasFocused } = useUi(
+    (state) => ({
+      picking: state.picker !== null,
+      sheetOpen: state.sheet !== null,
+      dialogOpen: state.shortcutsOpen,
+      exportMenuOpen: state.exportMenuOpen,
+      bgMode: state.bgMode,
+      canvasFocused: state.canvasFocused,
+    }),
+  );
+  const active = useWallpaper((state) => state.activeId !== null);
 
   const modal = picking || sheetOpen || dialogOpen;
   const overlay = modal || exportMenuOpen;
@@ -201,8 +211,11 @@ export const useShortcuts = () => {
 
   useHotkeys(
     [
-      bind("Tab", (e) => stepZone(1, e), { enabled: onCanvas, preventDefault: false }),
-      bind("Shift+Tab", (e) => stepZone(-1, e), { enabled: onCanvas, preventDefault: false }),
+      bind("Tab", (event) => stepZone(1, event), { enabled: onCanvas, preventDefault: false }),
+      bind("Shift+Tab", (event) => stepZone(-1, event), {
+        enabled: onCanvas,
+        preventDefault: false,
+      }),
       bind("Escape", () => leaveCanvas(bgMode), { enabled: onCanvas }),
 
       bind("Delete", deleteActive, { enabled: shapeKeys }),
@@ -228,15 +241,15 @@ export const useShortcuts = () => {
           ["ArrowRight", 1, 0],
           ["[KeyD]", 1, 0],
         ] as const
-      ).flatMap(([key, dx, dy]) => [
+      ).flatMap(([key, deltaX, deltaY]) => [
         bind(
           key as RegisterableHotkey,
-          plain((e) => moveBy(dx, dy, e)),
+          plain((event) => moveBy(deltaX, deltaY, event)),
           { enabled: shapeKeys },
         ),
         bind(
           `Shift+${key}` as RegisterableHotkey,
-          plain((e) => moveBy(dx, dy, e)),
+          plain((event) => moveBy(deltaX, deltaY, event)),
           { enabled: shapeKeys },
         ),
       ]),
@@ -248,32 +261,32 @@ export const useShortcuts = () => {
           ["[KeyQ]", -1],
           ["[KeyE]", 1],
         ] as const
-      ).flatMap(([key, dir]) => [
+      ).flatMap(([key, direction]) => [
         bind(
           key as RegisterableHotkey,
-          plain((e) => rotateBy(dir, e)),
+          plain((event) => rotateBy(direction, event)),
           { enabled: shapeKeys },
         ),
         bind(
           `Shift+${key}` as RegisterableHotkey,
-          plain((e) => rotateBy(dir, e)),
+          plain((event) => rotateBy(direction, event)),
           { enabled: shapeKeys },
         ),
       ]),
 
-      bind("R", (e) => resizeBy(1, e), { enabled: shapeKeys }),
-      bind("Shift+R", (e) => resizeBy(1, e), { enabled: shapeKeys }),
-      bind("F", (e) => resizeBy(-1, e), { enabled: shapeKeys }),
-      bind("Shift+F", (e) => resizeBy(-1, e), { enabled: shapeKeys }),
+      bind("R", (event) => resizeBy(1, event), { enabled: shapeKeys }),
+      bind("Shift+R", (event) => resizeBy(1, event), { enabled: shapeKeys }),
+      bind("F", (event) => resizeBy(-1, event), { enabled: shapeKeys }),
+      bind("Shift+F", (event) => resizeBy(-1, event), { enabled: shapeKeys }),
 
-      bind("T", (e) => opacityBy(1, e), { enabled: shapeKeys }),
-      bind("Shift+T", (e) => opacityBy(1, e), { enabled: shapeKeys }),
-      bind("G", (e) => opacityBy(-1, e), { enabled: shapeKeys }),
-      bind("Shift+G", (e) => opacityBy(-1, e), { enabled: shapeKeys }),
+      bind("T", (event) => opacityBy(1, event), { enabled: shapeKeys }),
+      bind("Shift+T", (event) => opacityBy(1, event), { enabled: shapeKeys }),
+      bind("G", (event) => opacityBy(-1, event), { enabled: shapeKeys }),
+      bind("Shift+G", (event) => opacityBy(-1, event), { enabled: shapeKeys }),
 
-      ...PALETTE.map((fill, i) =>
+      ...PALETTE.map((fill, index) =>
         bind(
-          `[Digit${i + 1}]` as RegisterableHotkey,
+          `[Digit${index + 1}]` as RegisterableHotkey,
           plain(() => {
             wallpaper.setActiveFill(fill);
             sayActive(150);
@@ -282,9 +295,9 @@ export const useShortcuts = () => {
         ),
       ),
 
-      ...PALETTE.map((fill, i) =>
+      ...PALETTE.map((fill, index) =>
         bind(
-          `Shift+[Digit${i + 1}]` as RegisterableHotkey,
+          `Shift+[Digit${index + 1}]` as RegisterableHotkey,
           plain(() => {
             wallpaper.setActiveOverlap(fill);
             sayActive(150);
@@ -331,10 +344,14 @@ export const useShortcuts = () => {
         }),
         { enabled: shapeKeys },
       ),
-      bind("X", (e) => armable(e, "x", "Clear everything? Press X again", wallpaper.clearAll), {
-        enabled: live,
-      }),
-      bind("I", (e) => armable(e, "i", "Surprise me? Press I again", wallpaper.surprise), {
+      bind(
+        "X",
+        (event) => armable(event, "x", "Clear everything? Press X again", wallpaper.clearAll),
+        {
+          enabled: live,
+        },
+      ),
+      bind("I", (event) => armable(event, "i", "Surprise me? Press I again", wallpaper.surprise), {
         enabled: live,
       }),
 
@@ -349,18 +366,18 @@ export const useShortcuts = () => {
       bind("Shift+ArrowUp", () => cyclePattern(-1), { enabled: bgKeys }),
       bind("ArrowDown", () => cyclePattern(1), { enabled: bgKeys }),
       bind("Shift+ArrowDown", () => cyclePattern(1), { enabled: bgKeys }),
-      bind("ArrowLeft", (e) => setPatternStrength(-1, e), { enabled: bgKeys }),
-      bind("Shift+ArrowLeft", (e) => setPatternStrength(-1, e), { enabled: bgKeys }),
-      bind("ArrowRight", (e) => setPatternStrength(1, e), { enabled: bgKeys }),
-      bind("Shift+ArrowRight", (e) => setPatternStrength(1, e), { enabled: bgKeys }),
-      bind("T", (e) => setPatternStrength(1, e), { enabled: bgKeys }),
-      bind("Shift+T", (e) => setPatternStrength(1, e), { enabled: bgKeys }),
-      bind("G", (e) => setPatternStrength(-1, e), { enabled: bgKeys }),
-      bind("Shift+G", (e) => setPatternStrength(-1, e), { enabled: bgKeys }),
-      bind("R", (e) => setPatternSize(1, e), { enabled: bgKeys }),
-      bind("Shift+R", (e) => setPatternSize(1, e), { enabled: bgKeys }),
-      bind("F", (e) => setPatternSize(-1, e), { enabled: bgKeys }),
-      bind("Shift+F", (e) => setPatternSize(-1, e), { enabled: bgKeys }),
+      bind("ArrowLeft", (event) => setPatternStrength(-1, event), { enabled: bgKeys }),
+      bind("Shift+ArrowLeft", (event) => setPatternStrength(-1, event), { enabled: bgKeys }),
+      bind("ArrowRight", (event) => setPatternStrength(1, event), { enabled: bgKeys }),
+      bind("Shift+ArrowRight", (event) => setPatternStrength(1, event), { enabled: bgKeys }),
+      bind("T", (event) => setPatternStrength(1, event), { enabled: bgKeys }),
+      bind("Shift+T", (event) => setPatternStrength(1, event), { enabled: bgKeys }),
+      bind("G", (event) => setPatternStrength(-1, event), { enabled: bgKeys }),
+      bind("Shift+G", (event) => setPatternStrength(-1, event), { enabled: bgKeys }),
+      bind("R", (event) => setPatternSize(1, event), { enabled: bgKeys }),
+      bind("Shift+R", (event) => setPatternSize(1, event), { enabled: bgKeys }),
+      bind("F", (event) => setPatternSize(-1, event), { enabled: bgKeys }),
+      bind("Shift+F", (event) => setPatternSize(-1, event), { enabled: bgKeys }),
     ],
     { conflictBehavior: "allow" },
   );

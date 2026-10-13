@@ -13,7 +13,7 @@ export const pickShape = (mode: PickMode, spec: ShapeSpec) => {
 };
 
 export function ShapePicker() {
-  const mode = useUi((s) => s.picker);
+  const mode = useUi((state) => state.picker);
   const active = useWallpaper(selectActive);
   const back = useRef<HTMLButtonElement>(null);
   const open = mode !== null;

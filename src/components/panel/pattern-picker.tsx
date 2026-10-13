@@ -43,10 +43,10 @@ function PatternTile({ id }: { id: PatternId }) {
 }
 
 export function PatternPicker() {
-  const { pattern, opacity, scale } = useWallpaper((s) => ({
-    pattern: s.prefs.pattern,
-    opacity: s.prefs.opacity,
-    scale: s.prefs.patternScale,
+  const { pattern, opacity, scale } = useWallpaper((state) => ({
+    pattern: state.prefs.pattern,
+    opacity: state.prefs.opacity,
+    scale: state.prefs.patternScale,
   }));
   return (
     <>
@@ -101,7 +101,7 @@ export function PatternPicker() {
           max={PATTERN_OPACITY.max * 100}
           step={1}
           value={Math.round(opacity * 100)}
-          onChange={(v) => wallpaper.setPatternOpacity(v / 100)}
+          onChange={(value) => wallpaper.setPatternOpacity(value / 100)}
           onReset={() => wallpaper.setPatternOpacity(PATTERN_OPACITY.default)}
         />
       </div>

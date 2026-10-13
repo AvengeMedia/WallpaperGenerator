@@ -25,9 +25,9 @@ export function IconButton({
       ref={ripple}
       title={rest.title ?? label}
       aria-label={label}
-      onClick={(e) => {
-        e.currentTarget.blur();
-        onClick?.(e);
+      onClick={(event) => {
+        event.currentTarget.blur();
+        onClick?.(event);
       }}
       className={cn(
         "inline-flex shrink-0 cursor-pointer items-center justify-center border-0 p-0 focus-ring morph active:rounded-lg disabled:pointer-events-none disabled:opacity-40 [&_svg]:size-6",

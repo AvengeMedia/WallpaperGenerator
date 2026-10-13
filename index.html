@@ -26,7 +26,7 @@
       try {
         var saved = JSON.parse(localStorage.getItem("wallpaper-layout-v1"));
         if (saved && saved.dark === false) document.documentElement.className = "light";
-      } catch (e) {}
+      } catch (error) {}
     </script>
   </head>
   <body>

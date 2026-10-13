@@ -18,13 +18,13 @@ interface ExportMenuProps {
 }
 
 export function ExportMenu({ trigger = true, align = "end" }: ExportMenuProps) {
-  const open = useUi((s) => s.exportMenuOpen);
-  const canvas = useWallpaper((s) => s.canvas);
+  const open = useUi((state) => state.exportMenuOpen);
+  const canvas = useWallpaper((state) => state.canvas);
   const { exportPng, exportJson, installInDms } = useExport();
   const wrap = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
   const menu = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+  const [position, setPosition] = useState<{ left: number; top: number } | null>(null);
 
   useFocusReturn(open, trigger ? button : undefined);
 
@@ -33,11 +33,11 @@ export function ExportMenu({ trigger = true, align = "end" }: ExportMenuProps) {
     const anchor = trigger ? button.current : wrap.current;
     if (!anchor) return;
     const place = () => {
-      const r = anchor.getBoundingClientRect();
+      const rect = anchor.getBoundingClientRect();
       const height = menu.current?.offsetHeight ?? 0;
-      const left = trigger && align === "end" ? r.right - MENU_WIDTH : r.left;
-      const top = trigger ? r.bottom + GAP : r.top;
-      setPos({
+      const left = trigger && align === "end" ? rect.right - MENU_WIDTH : rect.left;
+      const top = trigger ? rect.bottom + GAP : rect.top;
+      setPosition({
         left: clamp(left, EDGE, window.innerWidth - MENU_WIDTH - EDGE),
         top: clamp(top, EDGE, window.innerHeight - height - EDGE),
       });
@@ -52,20 +52,20 @@ export function ExportMenu({ trigger = true, align = "end" }: ExportMenuProps) {
   }, [open, trigger, align]);
 
   useEffect(() => {
-    if (!open || !pos) return;
+    if (!open || !position) return;
     menu.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus({ preventScroll: true });
-  }, [open, pos]);
+  }, [open, position]);
 
   useEffect(() => {
     if (!open) return;
-    const onPointerDown = (e: PointerEvent) => {
-      const target = e.target as Node;
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
       if (wrap.current?.contains(target) || menu.current?.contains(target)) return;
       ui.setExportMenuOpen(false);
     };
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") return;
-      e.stopImmediatePropagation();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.stopImmediatePropagation();
       ui.setExportMenuOpen(false);
     };
     window.addEventListener("pointerdown", onPointerDown);
@@ -79,24 +79,24 @@ export function ExportMenu({ trigger = true, align = "end" }: ExportMenuProps) {
   const moveFocus = (step: number | "first" | "last") => {
     const list = Array.from(menu.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []);
     if (!list.length) return;
-    const i = list.indexOf(document.activeElement as HTMLElement);
-    const n =
+    const focusedIndex = list.indexOf(document.activeElement as HTMLElement);
+    const nextIndex =
       step === "first"
         ? 0
         : step === "last"
           ? list.length - 1
-          : (i + step + list.length) % list.length;
-    list[n]?.focus({ preventScroll: true });
+          : (focusedIndex + step + list.length) % list.length;
+    list[nextIndex]?.focus({ preventScroll: true });
   };
 
-  const onMenuKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === "ArrowDown") moveFocus(1);
-    else if (e.key === "ArrowUp") moveFocus(-1);
-    else if (e.key === "Home") moveFocus("first");
-    else if (e.key === "End") moveFocus("last");
-    else if (e.key === "Tab") ui.setExportMenuOpen(false);
+  const onMenuKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "ArrowDown") moveFocus(1);
+    else if (event.key === "ArrowUp") moveFocus(-1);
+    else if (event.key === "Home") moveFocus("first");
+    else if (event.key === "End") moveFocus("last");
+    else if (event.key === "Tab") ui.setExportMenuOpen(false);
     else return;
-    e.preventDefault();
+    event.preventDefault();
   };
 
   const item = (icon: React.ReactNode, title: string, hint: string, onClick: () => void) => (
@@ -139,27 +139,27 @@ export function ExportMenu({ trigger = true, align = "end" }: ExportMenuProps) {
             ref={menu}
             role="menu"
             onKeyDown={onMenuKeyDown}
-            onBlur={(e) => {
-              if (!e.currentTarget.contains(e.relatedTarget as Node | null))
+            onBlur={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget as Node | null))
                 ui.setExportMenuOpen(false);
             }}
             style={{
-              left: pos?.left ?? 0,
-              top: pos?.top ?? 0,
-              visibility: pos ? "visible" : "hidden",
+              left: position?.left ?? 0,
+              top: position?.top ?? 0,
+              visibility: position ? "visible" : "hidden",
             }}
             className="fixed z-50 flex w-[212px] animate-fade-up flex-col gap-0.5 rounded-2xl bg-surface-container-high p-2 shadow-[0_2px_6px_rgba(0,0,0,.25),0_8px_24px_rgba(0,0,0,.2)]"
           >
             {item(
               <span className="material-symbols-rounded">image</span>,
               "PNG 2×",
-              `${canvas.w * 2} × ${canvas.h * 2}`,
+              `${canvas.width * 2} × ${canvas.height * 2}`,
               () => void exportPng(2),
             )}
             {item(
               <span className="material-symbols-rounded">image</span>,
               "PNG 1×",
-              `${canvas.w} × ${canvas.h}`,
+              `${canvas.width} × ${canvas.height}`,
               () => void exportPng(1),
             )}
             {item(

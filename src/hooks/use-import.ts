@@ -31,13 +31,13 @@ export const importLayoutFile = async (file: File | null | undefined) => {
 
 export const useDropImport = () => {
   useEffect(() => {
-    const onDragOver = (e: DragEvent) => {
-      if (e.dataTransfer?.types.includes("Files")) e.preventDefault();
+    const onDragOver = (event: DragEvent) => {
+      if (event.dataTransfer?.types.includes("Files")) event.preventDefault();
     };
-    const onDrop = (e: DragEvent) => {
-      const file = [...(e.dataTransfer?.files ?? [])].find((f) => /\.json$/i.test(f.name));
+    const onDrop = (event: DragEvent) => {
+      const file = [...(event.dataTransfer?.files ?? [])].find((f) => /\.json$/i.test(f.name));
       if (!file) return;
-      e.preventDefault();
+      event.preventDefault();
       void importLayoutFile(file);
     };
     window.addEventListener("dragover", onDragOver);

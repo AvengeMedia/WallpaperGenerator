@@ -102,7 +102,7 @@ const withCanvas = (prefs: Prefs) => ({
 });
 
 const randomSize = (canvas: Size) =>
-  Math.round(rnd(400, 860) * (Math.min(canvas.w, canvas.h) / 1080));
+  Math.round(rnd(400, 860) * (Math.min(canvas.width, canvas.height) / 1080));
 
 /* How many percent a shape may hang over the canvas edge */
 const BLEED = 0.35;
@@ -119,8 +119,8 @@ const randomPlacement = (canvas: Size, spec: ShapeSpec): Layer => {
     id: newLayerId(),
     ...spec,
     size,
-    x: Math.round(canvas.w / 2 - size / 2),
-    y: Math.round(canvas.h / 2 - size / 2),
+    x: Math.round(canvas.width / 2 - size / 2),
+    y: Math.round(canvas.height / 2 - size / 2),
     rot: 0,
     fill,
     overlap: randomOverlap(fill),
@@ -129,7 +129,7 @@ const randomPlacement = (canvas: Size, spec: ShapeSpec): Layer => {
 
 const surpriseLayers = (canvas: Size): Layer[] => {
   const count = 2 + Math.floor(Math.random() * 4);
-  return Array.from({ length: count }, (_, i) => {
+  return Array.from({ length: count }, (_, index) => {
     const size = randomSize(canvas);
     const fill = randomFill();
     const spec: ShapeSpec =
@@ -140,17 +140,19 @@ const surpriseLayers = (canvas: Size): Layer[] => {
       id: newLayerId(),
       ...spec,
       size,
-      x: Math.round(randomAxis(canvas.w, size)),
-      y: Math.round(randomAxis(canvas.h, size)),
+      x: Math.round(randomAxis(canvas.width, size)),
+      y: Math.round(randomAxis(canvas.height, size)),
       rot: Math.round(rnd(0, 360)),
       fill,
-      overlap: i > 0 && Math.random() < 0.75 ? randomOverlap(fill) : "none",
+      overlap: index > 0 && Math.random() < 0.75 ? randomOverlap(fill) : "none",
     };
   });
 };
 
 const signatureOf = ({ layers, prefs }: Snapshot) => {
-  const shapes = layers.map((l) => (l.shape ?? "") + (l.d ? "b" + l.d.length : "")).join(",");
+  const shapes = layers
+    .map((layer) => (layer.shape ?? "") + (layer.path ? "b" + layer.path.length : ""))
+    .join(",");
   return `${layers.length}|${shapes}|${prefs.pattern}|${prefs.format}|${prefs.orientation}`;
 };
 
@@ -161,7 +163,7 @@ export const wallpaperStore = createStore(initialState(), ({ setState, get }) =>
   const redoStack: string[] = [];
   let lastPattern: PatternId | null = null;
   let lastSnap = snapshotOf(get());
-  let lastSig = signatureOf(get());
+  let lastSignature = signatureOf(get());
   let lastChange = 0;
   let restoring = false;
 
@@ -172,17 +174,17 @@ export const wallpaperStore = createStore(initialState(), ({ setState, get }) =>
 
   const track = () => {
     if (restoring) return;
-    const cur = snapshotOf(get());
-    if (cur === lastSnap) return;
+    const current = snapshotOf(get());
+    if (current === lastSnap) return;
     const now = performance.now();
-    const sig = signatureOf(get());
-    if (now - lastChange > BURST_MS || sig !== lastSig) {
+    const signature = signatureOf(get());
+    if (now - lastChange > BURST_MS || signature !== lastSignature) {
       undoStack.push(lastSnap);
       if (undoStack.length > HISTORY_LIMIT) undoStack.shift();
     }
     lastChange = now;
-    lastSig = sig;
-    lastSnap = cur;
+    lastSignature = signature;
+    lastSnap = current;
     redoStack.length = 0;
     historyFlags();
   };
@@ -200,14 +202,14 @@ export const wallpaperStore = createStore(initialState(), ({ setState, get }) =>
 
   const active = () => {
     const { layers, activeId } = get();
-    return layers.find((l) => l.id === activeId) ?? null;
+    return layers.find((layer) => layer.id === activeId) ?? null;
   };
 
-  const updateActive = (fn: (l: Layer) => Layer, transient = false) => {
-    const l = active();
-    if (!l) return;
-    const next = fn(l);
-    const layers = get().layers.map((x) => (x.id === l.id ? next : x));
+  const updateActive = (fn: (layer: Layer) => Layer, transient = false) => {
+    const layer = active();
+    if (!layer) return;
+    const next = fn(layer);
+    const layers = get().layers.map((existing) => (existing.id === layer.id ? next : existing));
     if (transient) patch({ layers });
     else commit({ layers });
   };
@@ -221,19 +223,19 @@ export const wallpaperStore = createStore(initialState(), ({ setState, get }) =>
       restoring = false;
     }
     lastSnap = snapshotOf(get());
-    lastSig = signatureOf(get());
+    lastSignature = signatureOf(get());
     lastChange = 0;
     rememberPattern();
     historyFlags();
   };
 
   const replaceActiveShape = (spec: ShapeSpec) =>
-    updateActive((l) => {
-      const next: Layer = { ...l, ...spec };
+    updateActive((layer) => {
+      const next: Layer = { ...layer, ...spec };
       if (isBlob(spec)) {
         delete next.shape;
       } else {
-        delete next.d;
+        delete next.path;
         delete next.points;
         delete next.smoothness;
       }
@@ -250,13 +252,17 @@ export const wallpaperStore = createStore(initialState(), ({ setState, get }) =>
   return {
     select: (id: string | null) => patch({ activeId: id }),
 
-    stepActive: (dir: 1 | -1) => {
+    stepActive: (direction: 1 | -1) => {
       const { layers, activeId } = get();
       if (!layers.length) return;
-      const i = layers.findIndex((l) => l.id === activeId);
-      const next =
-        i < 0 ? (dir < 0 ? layers.length - 1 : 0) : (i + dir + layers.length) % layers.length;
-      patch({ activeId: layers[next].id });
+      const activeIndex = layers.findIndex((layer) => layer.id === activeId);
+      const nextIndex =
+        activeIndex < 0
+          ? direction < 0
+            ? layers.length - 1
+            : 0
+          : (activeIndex + direction + layers.length) % layers.length;
+      patch({ activeId: layers[nextIndex].id });
     },
 
     addLayer,
@@ -264,73 +270,82 @@ export const wallpaperStore = createStore(initialState(), ({ setState, get }) =>
 
     duplicateActive: () => {
       const { layers, activeId } = get();
-      const i = layers.findIndex((l) => l.id === activeId);
-      if (i < 0) return;
-      const src = layers[i];
-      const copy: Layer = { ...src, id: newLayerId(), x: src.x + 16, y: src.y + 16 };
-      const next = [...layers];
-      next.splice(i + 1, 0, copy);
-      commit({ layers: next, activeId: copy.id });
+      const activeIndex = layers.findIndex((layer) => layer.id === activeId);
+      if (activeIndex < 0) return;
+      const sourceLayer = layers[activeIndex];
+      const copy: Layer = {
+        ...sourceLayer,
+        id: newLayerId(),
+        x: sourceLayer.x + 16,
+        y: sourceLayer.y + 16,
+      };
+      const nextLayers = [...layers];
+      nextLayers.splice(activeIndex + 1, 0, copy);
+      commit({ layers: nextLayers, activeId: copy.id });
     },
 
     shuffleActive: () => {
-      const l = active();
-      if (!l) return;
+      const layer = active();
+      if (!layer) return;
       replaceActiveShape(
-        isBlob(l)
-          ? { type: "blob", ...createBlob(l.points.length, l.smoothness) }
-          : { type: "shape", shape: randomShapeIndex(l.shape) },
+        isBlob(layer)
+          ? { type: "blob", ...createBlob(layer.points.length, layer.smoothness) }
+          : { type: "shape", shape: randomShapeIndex(layer.shape) },
       );
     },
 
     patchActive: (fields: Partial<Omit<Layer, "id">>, transient = false) =>
-      updateActive((l) => ({ ...l, ...fields }), transient),
+      updateActive((layer) => ({ ...layer, ...fields }), transient),
 
-    moveActiveBy: (dx: number, dy: number, transient = false) =>
-      updateActive((l) => ({ ...l, x: l.x + dx, y: l.y + dy }), transient),
+    moveActiveBy: (deltaX: number, dleltaY: number, transient = false) =>
+      updateActive((layer) => ({ ...layer, x: layer.x + deltaX, y: layer.y + dleltaY }), transient),
 
-    resizeActive: (size: number) => updateActive((l) => resizeAroundCenter(l, size, get().canvas)),
+    resizeActive: (size: number) =>
+      updateActive((layer) => resizeAroundCenter(layer, size, get().canvas)),
 
-    setActiveFill: (fill: PaletteColor) => updateActive((l) => ({ ...l, fill })),
+    setActiveFill: (fill: PaletteColor) => updateActive((layer) => ({ ...layer, fill })),
 
-    cycleActiveFill: (dir: 1 | -1 = 1) =>
-      updateActive((l) => ({
-        ...l,
-        fill: PALETTE[(PALETTE.indexOf(l.fill) + dir + PALETTE.length) % PALETTE.length],
+    cycleActiveFill: (direction: 1 | -1 = 1) =>
+      updateActive((layer) => ({
+        ...layer,
+        fill: PALETTE[(PALETTE.indexOf(layer.fill) + direction + PALETTE.length) % PALETTE.length],
       })),
 
-    setActiveOverlap: (overlap: OverlapColor) => updateActive((l) => ({ ...l, overlap })),
+    setActiveOverlap: (overlap: OverlapColor) => updateActive((layer) => ({ ...layer, overlap })),
 
-    cycleActiveOverlap: (dir: 1 | -1) =>
-      updateActive((l) => {
-        const i = OVERLAP_OPTIONS.indexOf(l.overlap);
+    cycleActiveOverlap: (direction: 1 | -1) =>
+      updateActive((layer) => {
+        const overlapIndex = OVERLAP_OPTIONS.indexOf(layer.overlap);
         return {
-          ...l,
-          overlap: OVERLAP_OPTIONS[(i + dir + OVERLAP_OPTIONS.length) % OVERLAP_OPTIONS.length],
+          ...layer,
+          overlap:
+            OVERLAP_OPTIONS[
+              (overlapIndex + direction + OVERLAP_OPTIONS.length) % OVERLAP_OPTIONS.length
+            ],
         };
       }),
 
-    reorderActive: (dir: LayerDirection) => {
+    reorderActive: (direction: LayerDirection) => {
       const { layers, activeId } = get();
-      const i = layers.findIndex((l) => l.id === activeId);
-      if (i < 0) return;
-      const j =
-        dir === Infinity
+      const activeIndex = layers.findIndex((layer) => layer.id === activeId);
+      if (activeIndex < 0) return;
+      const targetIndex =
+        direction === Infinity
           ? layers.length - 1
-          : dir === -Infinity
+          : direction === -Infinity
             ? 0
-            : Math.min(layers.length - 1, Math.max(0, i + dir));
-      if (j === i) return;
-      const next = [...layers];
-      const [l] = next.splice(i, 1);
-      next.splice(j, 0, l);
-      commit({ layers: next });
+            : Math.min(layers.length - 1, Math.max(0, activeIndex + direction));
+      if (targetIndex === activeIndex) return;
+      const nextLayers = [...layers];
+      const [movedLayer] = nextLayers.splice(activeIndex, 1);
+      nextLayers.splice(targetIndex, 0, movedLayer);
+      commit({ layers: nextLayers });
     },
 
     deleteActive: () => {
       const { layers, activeId } = get();
       if (!activeId) return;
-      commit({ layers: layers.filter((l) => l.id !== activeId), activeId: null });
+      commit({ layers: layers.filter((layer) => layer.id !== activeId), activeId: null });
     },
 
     clearAll: () =>
@@ -347,9 +362,9 @@ export const wallpaperStore = createStore(initialState(), ({ setState, get }) =>
       setPattern(pattern === "none" ? (lastPattern ?? DEFAULT_PATTERN) : "none");
     },
 
-    cyclePattern: (dir: 1 | -1) => {
-      const i = PATTERNS.indexOf(get().prefs.pattern);
-      setPattern(PATTERNS[(i + dir + PATTERNS.length) % PATTERNS.length]);
+    cyclePattern: (direction: 1 | -1) => {
+      const patternIndex = PATTERNS.indexOf(get().prefs.pattern);
+      setPattern(PATTERNS[(patternIndex + direction + PATTERNS.length) % PATTERNS.length]);
     },
 
     setPatternOpacity: (opacity: number) =>
@@ -361,7 +376,11 @@ export const wallpaperStore = createStore(initialState(), ({ setState, get }) =>
     setFormat: (fields: FormatPatch) => {
       const { prefs, canvas, layers } = get();
       const next: Prefs = { ...prefs, ...fields };
-      if (fields.custom) next.custom = { w: clampPx(fields.custom.w), h: clampPx(fields.custom.h) };
+      if (fields.custom)
+        next.custom = {
+          width: clampPx(fields.custom.width),
+          height: clampPx(fields.custom.height),
+        };
       if (next.format === "custom" && prefs.format !== "custom" && !fields.custom)
         next.custom = { ...canvas };
       const nextCanvas = withCanvas(next);
@@ -408,10 +427,10 @@ export const wallpaper = wallpaperStore.actions;
 export const useWallpaper = <T>(selector: (s: WallpaperState) => T) =>
   useSelector(wallpaperStore, selector, { compare: shallow });
 
-export const selectActive = (s: WallpaperState) =>
-  s.layers.find((l) => l.id === s.activeId) ?? null;
-export const selectActiveIndex = (s: WallpaperState) =>
-  s.layers.findIndex((l) => l.id === s.activeId);
+export const selectActive = (state: WallpaperState) =>
+  state.layers.find((layer) => layer.id === state.activeId) ?? null;
+export const selectActiveIndex = (state: WallpaperState) =>
+  state.layers.findIndex((layer) => layer.id === state.activeId);
 
 let saveTimer: ReturnType<typeof setTimeout> | undefined;
 let lastPersisted: Snapshot & { dark: boolean } = wallpaperStore.state;

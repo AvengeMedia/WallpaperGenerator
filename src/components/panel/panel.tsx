@@ -21,18 +21,18 @@ interface PanelProps {
 }
 
 export function Panel({ hueTrack, primaryHex }: PanelProps) {
-  const { panel, tab, picking } = useUi((s) => ({
-    panel: s.panel,
-    tab: s.tab,
-    picking: s.picker !== null,
+  const { panel, tab, picking } = useUi((state) => ({
+    panel: state.panel,
+    tab: state.tab,
+    picking: state.picker !== null,
   }));
   if (panel === "hidden") return null;
   const mini = panel === "mini";
 
-  const onPanelKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
-    if (e.key !== "Tab" || !e.shiftKey) return;
-    if (!isFirstFocusable(document.activeElement, e.currentTarget)) return;
-    e.preventDefault();
+  const onPanelKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+    if (event.key !== "Tab" || !event.shiftKey) return;
+    if (!isFirstFocusable(document.activeElement, event.currentTarget)) return;
+    event.preventDefault();
     focusCanvas();
   };
 
@@ -103,15 +103,15 @@ function SurpriseButton() {
 }
 
 function AddShapeButton({ mini }: { mini: boolean }) {
-  const picking = useUi((s) => s.picker !== null);
+  const picking = useUi((state) => state.picker !== null);
   return (
     <button
       type="button"
       title="Add a shape (N)"
       aria-label="Add a shape"
       aria-keyshortcuts={ariaKeyshortcuts("N")}
-      onClick={(e) => {
-        e.currentTarget.blur();
+      onClick={(event) => {
+        event.currentTarget.blur();
         if (picking) ui.closePicker();
         else ui.openPicker("add");
       }}

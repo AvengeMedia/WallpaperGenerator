@@ -9,7 +9,7 @@ const hints: [string[], string][] = [
 ];
 
 export function BgModeBadge() {
-  const open = useUi((s) => s.bgMode);
+  const open = useUi((state) => state.bgMode);
   if (!open) return null;
   return (
     <div

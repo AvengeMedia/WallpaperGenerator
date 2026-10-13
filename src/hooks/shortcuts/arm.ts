@@ -11,8 +11,8 @@ interface Armed {
 let armed: Armed | null = null;
 let listening = false;
 
-const disarmOnOtherKey = (e: KeyboardEvent) => {
-  if (armed && e.code !== armed.code) armed = null;
+const disarmOnOtherKey = (event: KeyboardEvent) => {
+  if (armed && event.code !== armed.code) armed = null;
 };
 
 const listen = () => {
@@ -21,14 +21,14 @@ const listen = () => {
   window.addEventListener("keydown", disarmOnOtherKey, true);
 };
 
-export const armable = (e: KeyboardEvent, id: string, hint: string, run: () => void) => {
+export const armable = (event: KeyboardEvent, id: string, hint: string, run: () => void) => {
   listen();
-  if (e.repeat) return;
-  if (armed?.id === id && armed.code === e.code && performance.now() - armed.at < COOLDOWN) {
+  if (event.repeat) return;
+  if (armed?.id === id && armed.code === event.code && performance.now() - armed.at < COOLDOWN) {
     armed = null;
     run();
     return;
   }
-  armed = { id, code: e.code, at: performance.now() };
+  armed = { id, code: event.code, at: performance.now() };
   ui.showToast(hint, COOLDOWN);
 };

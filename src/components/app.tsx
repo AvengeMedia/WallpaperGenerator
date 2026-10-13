@@ -11,7 +11,7 @@ import { useUi } from "@/store/ui";
 
 export function App() {
   const { hueTrack, primaryHex } = useThemeColors();
-  const hidden = useUi((s) => s.panel === "hidden");
+  const hidden = useUi((state) => state.panel === "hidden");
   useShortcuts();
 
   return (

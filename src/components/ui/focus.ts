@@ -5,15 +5,16 @@ export const canvasEl = () => document.querySelector<HTMLElement>("[data-canvas]
 
 export const sidebarEl = () => document.querySelector<HTMLElement>("aside[data-panel]");
 
-const isTabStop = (el: HTMLElement) => el.offsetParent !== null && !el.closest("[inert]");
+const isTabStop = (element: HTMLElement) =>
+  element.offsetParent !== null && !element.closest("[inert]");
 
 export const focusablesOf = (root: HTMLElement): HTMLElement[] =>
   Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(isTabStop);
 
-const tryFocus = (el: HTMLElement | undefined | null) => {
-  if (!el) return false;
-  el.focus({ preventScroll: true });
-  return document.activeElement === el;
+const tryFocus = (element: HTMLElement | undefined | null) => {
+  if (!element) return false;
+  element.focus({ preventScroll: true });
+  return document.activeElement === element;
 };
 
 export const focusCanvas = () => tryFocus(canvasEl());
@@ -27,5 +28,5 @@ export const focusSidebar = (edge: "start" | "end" = "start") => {
   return false;
 };
 
-export const isFirstFocusable = (el: Element | null, root: HTMLElement) =>
-  focusablesOf(root)[0] === el;
+export const isFirstFocusable = (element: Element | null, root: HTMLElement) =>
+  focusablesOf(root)[0] === element;

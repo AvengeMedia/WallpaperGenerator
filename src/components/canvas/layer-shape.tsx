@@ -13,7 +13,7 @@ const maskBounds = (l: Layer) => {
 };
 
 export function LayerShape({ layer, index, below }: LayerShapeProps) {
-  const d = layerPath(layer);
+  const path = layerPath(layer);
   const transform = layerTransform(layer);
   const groupStyle = layer.opacity !== undefined ? { opacity: layer.opacity } : undefined;
 
@@ -21,7 +21,7 @@ export function LayerShape({ layer, index, below }: LayerShapeProps) {
     return (
       <g style={groupStyle}>
         <path
-          d={d}
+          d={path}
           transform={transform}
           data-id={layer.id}
           className="cursor-grab active:cursor-grabbing"
@@ -33,20 +33,20 @@ export function LayerShape({ layer, index, below }: LayerShapeProps) {
 
   const maskId = `mask-${layer.id}`;
   const half = layer.size * 0.75;
-  const cx = layer.x + layer.size / 2;
-  const cy = layer.y + layer.size / 2;
+  const centerX = layer.x + layer.size / 2;
+  const centerY = layer.y + layer.size / 2;
 
   return (
     <g style={groupStyle}>
       <defs>
         <mask id={maskId} maskUnits="userSpaceOnUse" {...maskBounds(layer)}>
-          <path d={d} transform={transform} fill="#fff" />
+          <path d={path} transform={transform} fill="#fff" />
         </mask>
       </defs>
       <g mask={`url(#${maskId})`} className="pointer-events-none">
         <rect
-          x={cx - half}
-          y={cy - half}
+          x={centerX - half}
+          y={centerY - half}
           width={half * 2}
           height={half * 2}
           className=""
@@ -63,7 +63,7 @@ export function LayerShape({ layer, index, below }: LayerShapeProps) {
         ))}
       </g>
       <path
-        d={d}
+        d={path}
         transform={transform}
         data-id={layer.id}
         fill="#000"

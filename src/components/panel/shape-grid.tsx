@@ -10,37 +10,37 @@ interface ShapeGridProps {
   className?: string;
 }
 
-const columnCount = (el: HTMLElement) =>
-  Math.max(1, getComputedStyle(el).gridTemplateColumns.split(/\s+/).filter(Boolean).length);
+const columnCount = (element: HTMLElement) =>
+  Math.max(1, getComputedStyle(element).gridTemplateColumns.split(/\s+/).filter(Boolean).length);
 
 export function ShapeGrid({ currentShape, onPick, className }: ShapeGridProps) {
   const [blob, setBlob] = useState(randomBlob);
   const [active, setActive] = useState(currentShape === undefined ? 0 : currentShape + 1);
   const grid = useRef<HTMLDivElement>(null);
 
-  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+  const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     const buttons = Array.from(grid.current?.querySelectorAll<HTMLButtonElement>("button") ?? []);
-    const i = buttons.indexOf(document.activeElement as HTMLButtonElement);
-    if (i < 0) return;
+    const focusedIndex = buttons.indexOf(document.activeElement as HTMLButtonElement);
+    if (focusedIndex < 0) return;
     const last = buttons.length - 1;
-    const cols = columnCount(e.currentTarget);
+    const cols = columnCount(event.currentTarget);
     const next =
-      e.key === "ArrowRight"
-        ? i + 1
-        : e.key === "ArrowLeft"
-          ? i - 1
-          : e.key === "ArrowDown"
-            ? i + cols
-            : e.key === "ArrowUp"
-              ? i - cols
-              : e.key === "Home"
+      event.key === "ArrowRight"
+        ? focusedIndex + 1
+        : event.key === "ArrowLeft"
+          ? focusedIndex - 1
+          : event.key === "ArrowDown"
+            ? focusedIndex + cols
+            : event.key === "ArrowUp"
+              ? focusedIndex - cols
+              : event.key === "Home"
                 ? 0
-                : e.key === "End"
+                : event.key === "End"
                   ? last
                   : undefined;
     if (next === undefined) return;
-    e.preventDefault();
-    e.stopPropagation();
+    event.preventDefault();
+    event.stopPropagation();
     const target = Math.max(0, Math.min(last, next));
     setActive(target);
     buttons[target]?.focus({ preventScroll: true });
@@ -56,7 +56,7 @@ export function ShapeGrid({ currentShape, onPick, className }: ShapeGridProps) {
       )}
     >
       <ShapeCard
-        d={blob.d}
+        d={blob.path}
         name="Random blob"
         tabIndex={active === 0 ? 0 : -1}
         onFocus={() => setActive(0)}
@@ -65,15 +65,15 @@ export function ShapeGrid({ currentShape, onPick, className }: ShapeGridProps) {
           setBlob(randomBlob());
         }}
       />
-      {SHAPES.map((s, i) => (
+      {SHAPES.map((shape, index) => (
         <ShapeCard
-          key={s.name}
-          d={s.d}
-          name={prettyName(s.name)}
-          current={currentShape === i}
-          tabIndex={active === i + 1 ? 0 : -1}
-          onFocus={() => setActive(i + 1)}
-          onPick={(shift) => onPick({ type: "shape", shape: i }, shift)}
+          key={shape.name}
+          d={shape.path}
+          name={prettyName(shape.name)}
+          current={currentShape === index}
+          tabIndex={active === index + 1 ? 0 : -1}
+          onFocus={() => setActive(index + 1)}
+          onPick={(shift) => onPick({ type: "shape", shape: index }, shift)}
         />
       ))}
     </div>
