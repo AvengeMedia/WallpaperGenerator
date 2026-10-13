@@ -276,8 +276,8 @@ export const wallpaperStore = createStore(initialState(), ({ setState, get }) =>
       const copy: Layer = {
         ...sourceLayer,
         id: newLayerId(),
-        x: sourceLayer.x + 16,
-        y: sourceLayer.y + 16,
+        x: sourceLayer.x + sourceLayer.size * 0.25,
+        y: sourceLayer.y + sourceLayer.size * 0.125,
       };
       const nextLayers = [...layers];
       nextLayers.splice(activeIndex + 1, 0, copy);
