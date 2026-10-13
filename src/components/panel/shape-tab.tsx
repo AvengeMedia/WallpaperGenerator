@@ -169,34 +169,40 @@ export function ShapeTab() {
         </RadioGroup>
       </div>
 
-      {index > 0 && (
-        <div className="flex flex-col gap-2">
-          <FieldLabel
-            icon={<span className="material-symbols-rounded">layers</span>}
-            title="Overlap color: Shift+1–8, Shift+0 for none"
+      <div className="flex flex-col gap-2">
+        <FieldLabel
+          icon={<span className="material-symbols-rounded">layers</span>}
+          title="Overlap color: Shift+1–8, Shift+0 for none. The shape on top decides the overlap color where shapes meet."
+          value={
+            index === 0 ? (
+              <span id="overlap-hint" className="text-xs font-normal">
+                won't apply at the bottom
+              </span>
+            ) : undefined
+          }
+        >
+          Overlap color
+        </FieldLabel>
+        <RadioGroup<OverlapColor>
+          label="Overlap color"
+          value={active.overlap}
+          onChange={wallpaper.setActiveOverlap}
+          aria-describedby={index === 0 ? "overlap-hint" : undefined}
+          className="flex flex-wrap gap-2"
+        >
+          <RadioItem
+            value="none"
+            title="No overlap color (Shift+0)"
+            aria-label="No overlap color"
+            className="inline-flex size-[30px] items-center justify-center rounded-full border-0 bg-surface-container-high p-0 text-on-surface-variant focus-ring data-checked:outline-3 data-checked:outline-offset-2 data-checked:outline-primary [&>svg]:size-[18px]"
           >
-            Overlap color
-          </FieldLabel>
-          <RadioGroup<OverlapColor>
-            label="Overlap color"
-            value={active.overlap}
-            onChange={wallpaper.setActiveOverlap}
-            className="flex flex-wrap gap-2"
-          >
-            <RadioItem
-              value="none"
-              title="No overlap color (Shift+0)"
-              aria-label="No overlap color"
-              className="inline-flex size-[30px] items-center justify-center rounded-full border-0 bg-surface-container-high p-0 text-on-surface-variant focus-ring data-checked:outline-3 data-checked:outline-offset-2 data-checked:outline-primary [&>svg]:size-[18px]"
-            >
-              <span className="material-symbols-rounded">block</span>
-            </RadioItem>
-            {PALETTE.map((color) => (
-              <Swatch key={color} color={color} />
-            ))}
-          </RadioGroup>
-        </div>
-      )}
+            <span className="material-symbols-rounded">block</span>
+          </RadioItem>
+          {PALETTE.map((color) => (
+            <Swatch key={color} color={color} />
+          ))}
+        </RadioGroup>
+      </div>
 
       <div className="flex flex-col gap-2">
         <FieldLabel
